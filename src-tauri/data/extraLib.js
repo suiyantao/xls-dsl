@@ -28,7 +28,7 @@ const fs = {
      * 读取xls文件
      *
      * @param {string=} filePath 文件地址，可选参数 默认读取选择的文件
-     * @return {Array} 返回值描述
+     * @return {Promise<Array>} 返回值描述
      */
     read_xls(filePath) {
 

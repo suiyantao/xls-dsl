@@ -1,27 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+// mod v8;
+
+mod deno;
 mod collections;
 mod dao;
 mod handlers;
 mod parse_xls;
-mod v8;
 
-use handlers::handler;
+use handlers::handler::{self, APP};
 
 use crate::dao::db;
 use core::result::Result::Ok;
-use std::collections::HashMap;
-use std::sync::Mutex;
-use lazy_static::lazy_static;
-use tauri::{Manager, Window};
+use tauri::Manager;
 
-lazy_static!{
-    static ref APP:Mutex<HashMap<String, Window>> = {
-      let map = HashMap::new();
-      Mutex::new(map)
-    };
-}
+
  
 fn main() {
     tauri::Builder::default()

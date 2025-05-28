@@ -9,7 +9,7 @@ use serde::Serialize;
 #[derive(Clone)]
 #[derive(PartialEq, PartialOrd)]
 #[serde(rename_all = "camelCase")]
-pub struct File {
+pub struct XlsFile {
     pub id: i32,
     pub name: String,
     pub xlx_template: String,

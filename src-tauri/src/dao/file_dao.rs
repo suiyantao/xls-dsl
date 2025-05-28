@@ -1,7 +1,7 @@
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 use diesel::associations::HasTable;
 use crate::dao::db;
-use crate::dao::models::{File, NewFile};
+use crate::dao::models::{XlsFile, NewFile};
 use crate::dao::schema::file::{code, created_date, id};
 use crate::dao::schema::file::dsl::file;
 
@@ -10,35 +10,35 @@ use super::schema::file::{name, xlx_template};
 
 
 
-pub(crate) fn select() -> anyhow::Result<Vec<File>> {
+pub(crate) fn select() -> anyhow::Result<Vec<XlsFile>> {
     let mut connection = db::establish_db_connection();
-    let result = file.select(File::as_select()).order_by(created_date.asc()).load(&mut connection)?;
+    let result = file.select(XlsFile::as_select()).order_by(created_date.asc()).load(&mut connection)?;
     Ok(result)
 }
 
-pub(crate) fn insert(new_file: NewFile) -> anyhow::Result<File> {
+pub(crate) fn insert(new_file: NewFile) -> anyhow::Result<XlsFile> {
     let mut connection = db::establish_db_connection();
     diesel::insert_into(file::table()).values(new_file).execute(&mut connection)?;
-    let row  = file.order(id.desc()).first::<File>(&mut connection)?;
+    let row  = file.order(id.desc()).first::<XlsFile>(&mut connection)?;
     Ok(row)
 }
 
-pub(crate) fn update(update_file: File) -> anyhow::Result<File> {
+pub(crate) fn update(update_file: XlsFile) -> anyhow::Result<XlsFile> {
     let mut connection = db::establish_db_connection();
     let _ = diesel::update(file::table()).set(update_file.clone()).filter(id.eq(&update_file.id)).execute(&mut connection)?;
-    Ok(file.filter(id.eq(update_file.id)).first::<File>(&mut connection)?)
+    Ok(file.filter(id.eq(update_file.id)).first::<XlsFile>(&mut connection)?)
 }
 
-pub(crate) fn update_code_by_id(id_where: i32, code_str: String) -> anyhow::Result<File> {
+pub(crate) fn update_code_by_id(id_where: i32, code_str: String) -> anyhow::Result<XlsFile> {
     let mut connection = db::establish_db_connection();
     let _ = diesel::update(file).set(code.eq(&code_str)).filter(id.eq(&id_where)).execute(&mut connection)?;
-    Ok(file.filter(id.eq(id_where)).first::<File>(&mut connection)?)
+    Ok(file.filter(id.eq(id_where)).first::<XlsFile>(&mut connection)?)
 }
 
-pub(crate) fn update_name_xls_by_id(id_where: i32, name_set: String, xls_set: String) -> anyhow::Result<File>{
+pub(crate) fn update_name_xls_by_id(id_where: i32, name_set: String, xls_set: String) -> anyhow::Result<XlsFile>{
     let mut connection = db::establish_db_connection();
     let _ = diesel::update(file).set((name.eq(&name_set), xlx_template.eq(&xls_set))).filter(id.eq(&id_where)).execute(&mut connection)?;
-    Ok(file.filter(id.eq(id_where)).first::<File>(&mut connection)?)
+    Ok(file.filter(id.eq(id_where)).first::<XlsFile>(&mut connection)?)
 }
 
 
@@ -49,9 +49,9 @@ pub(crate) fn remove(id_del: i32) -> anyhow::Result<usize> {
     Ok(i)
 }
 
-pub(crate) fn get_by_id(where_id: i32) -> anyhow::Result<File> {
+pub(crate) fn get_by_id(where_id: i32) -> anyhow::Result<XlsFile> {
     let mut connection = db::establish_db_connection();
-    Ok(file.filter(id.eq(where_id)).first::<File>(&mut connection)?)
+    Ok(file.filter(id.eq(where_id)).first::<XlsFile>(&mut connection)?)
 }
 
 
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn  update_test(){
-        let file_add = File{
+        let file_add = XlsFile{
             id:3,
             name: "test".to_string(),
             xlx_template: "test".to_string(),

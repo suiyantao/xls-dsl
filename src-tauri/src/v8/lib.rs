@@ -1,11 +1,15 @@
 use lazy_static::lazy_static;
-use std::sync::{Mutex, Once};
+use std::sync::{Arc, Mutex, Once};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
+use std::future::Future;
 use std::io::{BufRead, BufReader, Write};
+use std::ops::DerefMut;
 use std::path::Path;
+use std::thread::{Builder, spawn};
+use actix_rt::Runtime;
 use serde_json::Value;
 use serde_v8::Serializable;
 use sonyflake::Sonyflake;
@@ -58,8 +62,8 @@ impl V8Runtime {
         V8Runtime::add_snow_id_fun(scope, object_template);
         V8Runtime::add_println_fun(scope, object_template);
         V8Runtime::add_uuid_fun(scope, object_template);
-
         V8Runtime::file_fun(scope, object_template);
+        // V8Runtime::http_client_fun(scope, object_template);
 
         let context = v8::Context::new_from_template(scope, object_template);
         let scope = &mut v8::ContextScope::new(scope, context);
@@ -137,7 +141,6 @@ impl V8Runtime {
                             println!("{:#?}", err)
                         }
                     }
-
                 }
             }
         };
@@ -145,7 +148,6 @@ impl V8Runtime {
         let name = v8::String::new(scope, "println").unwrap();
         object_template.set(name.into(), function.into());
     }
-
 
 
     fn add_snow_id_fun(scope: &mut HandleScope<()>, object_template: Local<ObjectTemplate>) {
@@ -175,7 +177,7 @@ impl V8Runtime {
 
     fn file_fun(scope: &mut HandleScope<()>, object_template: Local<ObjectTemplate>) {
         let create_file_callback = |scope: &mut HandleScope, args: FunctionCallbackArguments, mut res: ReturnValue| {
-            if args.length() != 1{
+            if args.length() != 1 {
                 let err_msg = v8::String::new(scope, "参数个数不正确").unwrap().into();
                 scope.throw_exception(err_msg);
             }
@@ -197,11 +199,11 @@ impl V8Runtime {
         };
         let append_str_callback = |scope: &mut HandleScope, args: FunctionCallbackArguments, mut res: ReturnValue| {
             let i = args.length();
-            if args.length() !=2 {
+            if args.length() != 2 {
                 let err_msg = v8::String::new(scope, "参数个数不正确").unwrap().into();
                 scope.throw_exception(err_msg);
             }
-            if i>1 {
+            if i > 1 {
                 let arg1 = args.get(0);
                 let arg2 = args.get(1);
                 let path = arg1.to_rust_string_lossy(scope);
@@ -216,30 +218,29 @@ impl V8Runtime {
                         scope.throw_exception(exception);
                     }
                 }
-
             }
         };
 
         let read_xls_callback = |scope: &mut HandleScope, args: FunctionCallbackArguments, mut res: ReturnValue| {
             // 如果传入路径则读取对应的路径
-            let mut path ;
-            if args.length() == 1{
+            let mut path;
+            if args.length() == 1 {
                 let arg1 = args.get(0).to_rust_string_lossy(scope);
                 let file = Path::new(&arg1);
-                if !file.is_file() || !file.exists(){
+                if !file.is_file() || !file.exists() {
                     let msg = v8::String::new(scope, &format!("The file [{}] not exists", arg1)).unwrap();
                     let exception = v8::Exception::type_error(scope, msg.into());
                     scope.throw_exception(exception);
                     return;
                 }
-                if file.extension().unwrap().to_ascii_uppercase() != "XLSX"{
+                if file.extension().unwrap().to_ascii_uppercase() != "XLSX" {
                     let msg = v8::String::new(scope, &format!("The file [{}] format is incorrect. Support xlsx format.", arg1)).unwrap();
                     let exception = v8::Exception::type_error(scope, msg.into());
                     scope.throw_exception(exception);
                     return;
                 }
                 path = arg1;
-            }else {
+            } else {
                 let binding = PATH.lock().unwrap();
                 path = binding.get("path").unwrap().clone();
             }
@@ -253,18 +254,18 @@ impl V8Runtime {
 
         let read_txt_lines_callback = |scope: &mut HandleScope, args: FunctionCallbackArguments, mut res: ReturnValue| {
             // 如果传入路径则读取对应的路径
-            let mut path ;
-            if args.length() == 1{
+            let mut path;
+            if args.length() == 1 {
                 let arg1 = args.get(0).to_rust_string_lossy(scope);
                 let file = Path::new(&arg1);
-                if !file.is_file() || !file.exists(){
+                if !file.is_file() || !file.exists() {
                     let msg = v8::String::new(scope, &format!("The file [{}] not exists", arg1)).unwrap();
                     let exception = v8::Exception::type_error(scope, msg.into());
                     scope.throw_exception(exception);
                     return;
                 }
                 path = arg1;
-            }else {
+            } else {
                 let msg = v8::String::new(scope, "args length must be one").unwrap();
                 let exception = v8::Exception::type_error(scope, msg.into());
                 scope.throw_exception(exception);
@@ -272,7 +273,7 @@ impl V8Runtime {
             }
             let file = File::open(path).unwrap();
             let fin = BufReader::new(file);
-            let lines_res = fin.lines().map(|line|line.unwrap()).collect::<Vec<_>>();
+            let lines_res = fin.lines().map(|line| line.unwrap()).collect::<Vec<_>>();
             let result1 = serde_json::to_value(&lines_res).unwrap().to_v8(scope).unwrap();
             res.set(result1);
         };
@@ -280,18 +281,18 @@ impl V8Runtime {
 
         let read_txt_callback = |scope: &mut HandleScope, args: FunctionCallbackArguments, mut res: ReturnValue| {
             // 如果传入路径则读取对应的路径
-            let mut path ;
-            if args.length() == 1{
+            let mut path;
+            if args.length() == 1 {
                 let arg1 = args.get(0).to_rust_string_lossy(scope);
                 let file = Path::new(&arg1);
-                if !file.is_file() || !file.exists(){
+                if !file.is_file() || !file.exists() {
                     let msg = v8::String::new(scope, &format!("The file [{}] not exists", arg1)).unwrap();
                     let exception = v8::Exception::type_error(scope, msg.into());
                     scope.throw_exception(exception);
                     return;
                 }
                 path = arg1;
-            }else {
+            } else {
                 let msg = v8::String::new(scope, "args length must be one").unwrap();
                 let exception = v8::Exception::type_error(scope, msg.into());
                 scope.throw_exception(exception);
@@ -303,15 +304,46 @@ impl V8Runtime {
         };
 
         let file = ObjectTemplate::new(scope);
-        file.set( v8::String::new(scope, "append").unwrap().into(), FunctionTemplate::new(scope, append_str_callback).into());
-        file.set( v8::String::new(scope, "create").unwrap().into(), FunctionTemplate::new(scope, create_file_callback).into());
-        file.set( v8::String::new(scope, "read_xls").unwrap().into(), FunctionTemplate::new(scope, read_xls_callback).into());
-        file.set( v8::String::new(scope, "read_to_line").unwrap().into(), FunctionTemplate::new(scope, read_txt_lines_callback).into());
-        file.set( v8::String::new(scope, "read_to_string").unwrap().into(), FunctionTemplate::new(scope, read_txt_callback).into());
+        file.set(v8::String::new(scope, "append").unwrap().into(), FunctionTemplate::new(scope, append_str_callback).into());
+        file.set(v8::String::new(scope, "create").unwrap().into(), FunctionTemplate::new(scope, create_file_callback).into());
+        file.set(v8::String::new(scope, "read_xls").unwrap().into(), FunctionTemplate::new(scope, read_xls_callback).into());
+        file.set(v8::String::new(scope, "read_to_line").unwrap().into(), FunctionTemplate::new(scope, read_txt_lines_callback).into());
+        file.set(v8::String::new(scope, "read_to_string").unwrap().into(), FunctionTemplate::new(scope, read_txt_callback).into());
 
         let file_name = v8::String::new(scope, "fs").unwrap();
         object_template.set(file_name.into(), file.into());
+    }
 
+
+    fn fetch(scope: &mut HandleScope, args: FunctionCallbackArguments, mut rv: ReturnValue) {
+        let url: String = serde_v8::from_v8(scope, args.get(0)).unwrap();
+        println!("url: {}", url);
+
+        let run  = Runtime::new().unwrap();
+
+        run.block_on(async move {
+            match reqwest::get(&url).await {
+                Ok(response) => {
+                    let string = response.text().await.unwrap();
+                    rv.set(serde_v8::to_v8(scope, string).unwrap());
+                }
+                Err(err) => {
+                    println!("{:?}", err);
+                }
+            }
+        });
+    }
+
+
+    fn http_client_fun(scope: &mut HandleScope<()>, object_template: Local<ObjectTemplate>) {
+        let http_template = ObjectTemplate::new(scope);
+        http_template.set(v8::String::new(scope, "get").unwrap().into(), FunctionTemplate::new(scope, Self::fetch).into());
+        // http_template.set( v8::String::new(scope, "post").unwrap().into(), FunctionTemplate::new(scope, create_file_callback).into());
+        // http_template.set( v8::String::new(scope, "put").unwrap().into(), FunctionTemplate::new(scope, read_xls_callback).into());
+        // http_template.set( v8::String::new(scope, "delete").unwrap().into(), FunctionTemplate::new(scope, read_txt_lines_callback).into());
+
+        let file_name = v8::String::new(scope, "http").unwrap();
+        object_template.set(file_name.into(), http_template.into());
     }
 
 
