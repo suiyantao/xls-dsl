@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use calamine::{open_workbook, Reader, Xlsx};
 use lazy_static::lazy_static;
 use serde_json::{json, Map, Number, Value};
@@ -34,40 +33,38 @@ impl ParseXls {
     /// read xls function
     pub fn read_all(&mut self) -> anyhow::Result<Value> {
         let mut workbook: Xlsx<_> = open_workbook(self.xls_path.as_str())?;
-
-        match workbook.worksheets().first() {
-            Some((_, sheet_data)) => {
-                let mut row_data_ve: Vec<JsonObject> = vec![];
-                sheet_data.rows().for_each(|x| {
-                    let mut row_data: JsonObject = JsonObject::new();
-                    for i in 0..x.len() {
-                        let ele = &x[i];
-                        let index_s = COLUMN_INDEX.get(i).unwrap();
-                        if ele.is_bool() {
-                            row_data.insert(index_s.clone(), Value::Bool(ele.get_bool().unwrap()));
-                        } else if ele.is_float() {
-                            let data: f64 = ele.get_float().unwrap();
-                            let dataview = Number::from_f64(data);
-                            row_data.insert(index_s.clone(), Value::Number(dataview.unwrap()));
-                        } else if ele.is_int() {
-                            row_data.insert(
-                                index_s.clone(),
-                                Value::Number(Number::from(ele.get_int().unwrap())),
-                            );
-                        } else if ele.is_string() {
-                            row_data.insert(
-                                index_s.clone(),
-                                Value::String(ele.get_string().unwrap().to_string()),
-                            );
-                        } else {
-                            row_data.insert(index_s.clone(), Value::Null);
-                        }
+        let mut sheets = Vec::new();
+        workbook.worksheets().iter().for_each(|(_, sheet_data)|{
+            let mut row_data_ve: Vec<JsonObject> = vec![];
+            sheet_data.rows().for_each(|x| {
+                let mut row_data: JsonObject = JsonObject::new();
+                for i in 0..x.len() {
+                    let ele = &x[i];
+                    let index_s = COLUMN_INDEX.get(i).unwrap();
+                    if ele.is_bool() {
+                        row_data.insert(index_s.clone(), Value::Bool(ele.get_bool().unwrap()));
+                    } else if ele.is_float() {
+                        let data: f64 = ele.get_float().unwrap();
+                        let dataview = Number::from_f64(data);
+                        row_data.insert(index_s.clone(), Value::Number(dataview.unwrap()));
+                    } else if ele.is_int() {
+                        row_data.insert(
+                            index_s.clone(),
+                            Value::Number(Number::from(ele.get_int().unwrap())),
+                        );
+                    } else if ele.is_string() {
+                        row_data.insert(
+                            index_s.clone(),
+                            Value::String(ele.get_string().unwrap().to_string()),
+                        );
+                    } else {
+                        row_data.insert(index_s.clone(), Value::Null);
                     }
-                    row_data_ve.push(row_data)
-                });
-                return Ok(json!(row_data_ve));
-            }
-            None => return Err(anyhow!("file sheet not found")),
-        }
+                }
+                row_data_ve.push(row_data)
+            });
+            sheets.push(row_data_ve);
+        });
+        Ok(json!(sheets))
     }
 }
