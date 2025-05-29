@@ -4,9 +4,8 @@
             [class.dragged]="isDragged">
         </div>
         <as-split-area #leftSplitArea size="20">
-            <div class="flex flex-col h-full w-full dark:bg-[rgb(30,30,30)] overflow-hidden">
-                <div
-                    class="w-full relative  h-9 flex justify-end items-center pr-1 drop-shadow-sm  border-b-[1px] border-solid border-[rgb(220,220,220)] dark:border-[rgb(43,43,43)]">
+            <div class="flex flex-col h-full w-full dark:bg-[rgb(30,30,30)] overflow-hidden min-w-[180px]">
+                <div class="w-full relative  h-9 flex justify-end items-center pr-1 drop-shadow-sm  border-b-[1px] border-solid border-[rgb(220,220,220)] dark:border-[rgb(43,43,43)]">
                     <div class=" absolute left-2">
                         <label
                             class=" dark:text-[rgb(189,189,189)] font-mono select-none  text-black  text-[13px]">资源管理器</label>
@@ -20,7 +19,7 @@
                 <div class="overflow-auto">
                     @for (file of fileList; track $index) {
                     <div (contextmenu)="fileContextmenu($event, file)" #fileItem
-                        class="dark:text-[rgb(189,189,189)] hover:bg-[rgb(224,226,239)] hover:dark:bg-[rgb(48,48,53)]  select-none  text-black  text-[14px] pl-2 flex gap-2 items-center {{file.selected?'file-selected':''}}"
+                        class="dark:text-[rgb(189,189,189)] hover:bg-[rgb(224,226,239)] hover:dark:bg-[rgb(48,48,53)]  select-none  text-black  text-[14px] pl-2 flex gap-1 items-center {{file.selected?'file-selected':''}}"
                         (click)="fileClick($event, file)">
                         <div class=" w-[13px]"> <img  src="assets/jsicon.svg" class="w-3"/></div> <label class="text-[13px]">{{file.name}}</label>
                     </div>
