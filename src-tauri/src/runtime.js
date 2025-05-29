@@ -27,29 +27,51 @@
   };
 
   globalThis.fs = {
-    readFile: (path) => {
-      return core.ops.op_read_file(path);
-    },
-    writeFile: (path, contents) => {
-      return core.ops.op_write_file(path, contents);
-    },
-    removeFile: (path) => {
-      return core.ops.op_remove_file(path);
-    },
     read_xls: (path) => {
       return core.ops.op_read_xls(path);
     },
     create: (path) => {
-      return core.ops.op_file_create(path);
+      return core.ops.op_fs_create_file(path);
     },
-    append: (path, contents) => {
-      return core.ops.op_file_append(path, contents);
+    append: (path, content) => {
+      return core.ops.op_fs_append(path, content);
     },
-    read_to_line: (path, contents) => {
-      return core.ops.op_file_read_line(path, contents);
+    copy: (src, dst) => {
+      return core.ops.op_fs_copy_file(src, dst);
     },
-    read_to_string: (path, contents) => {
-      return core.ops.op_read_to_string(path, contents);
+    createDir: (path) => {
+      return core.ops.op_fs_create_dir(path);
+    },
+    createDirAll: (path) => {
+      return core.ops.op_fs_create_dir_all(path);
+    },
+    exists: (path) => {
+      return core.ops.op_fs_exists(path);
+    },
+    hardLink: (src, dst) => {
+      return core.ops.op_fs_hard_link(src, dst);
+    },
+    readToString: (path) => {
+      return core.ops.op_fs_read_to_string(path);
+    },
+    removeDir: (path) => {
+      return core.ops.op_fs_remove_dir(path);
+    },
+    removeDirAll: (path) => {
+      return core.ops.op_fs_remove_dir_all(path);
+    },
+    removeFile: (path) => {
+      return core.ops.op_fs_remove_file(path);
+    },
+    rename: (src, dst) => {
+      return core.ops.op_fs_rename(src, dst);
+    },
+    write: (path, contents) => {
+      return core.ops.op_fs_write(path, contents);
+    },
+    readToLine: (filePath) => {
+      return core.ops.op_fs_read_line(filePath);
     }
+
   };
 })(globalThis);
