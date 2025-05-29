@@ -105,6 +105,23 @@ pub fn op_fs_rename(#[string] src: String, #[string] dst: String) -> Result<(), 
     fs::rename(src, dst)?;
     Ok(())
 }
+// 公共方法：创建文件，如果创建失败则返回错误
+fn create_file_if_not_exists(path: &str) -> Result<(), AnyError> {
+    // 如果文件的文件夹不存在，则创建文件夹
+    if let Some(parent) = std::path::Path::new(path).parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if !std::path::Path::new(path).exists() {
+        let file = std::fs::File::create(path);
+        match file {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(AnyError::from(e));
+            }
+        }
+    }
+    Ok(())
+}
 
 // 将指定内容写入文件，会覆盖原有内容
 /// # 参数
@@ -112,14 +129,9 @@ pub fn op_fs_rename(#[string] src: String, #[string] dst: String) -> Result<(), 
 /// - `contents`: 要写入文件的内容，以字符串形式表示。
 #[op2(fast)]
 pub fn op_fs_write(#[string] path: String, #[string] contents: String) -> Result<(), AnyError> {
-    match fs::write(path, contents) {
-        Ok(_) => {
-            return Ok(());
-        }
-        Err(e) => {
-            return Err(AnyError::from(e));
-        }
-    }
+    create_file_if_not_exists(&path)?;
+    fs::write(path, contents)?;
+    Ok(())
 }
 
 // 逐行读取文件内容并返回字符串向量
@@ -151,7 +163,9 @@ pub fn op_fs_read_line(#[string] path: String) -> Result<Vec<String>, AnyError> 
 /// - `contents`: 要追加到文件末尾的内容，以字符串形式表示。
 #[op2(fast)]
 pub fn op_fs_append(#[string] file: String, #[string] contents: String) -> Result<(), AnyError> {
-    let file_opt = std::fs::OpenOptions::new().append(true).open(file);
+    // 如果文件不存在，则创建文件
+    create_file_if_not_exists(&file)?;
+    let file_opt = std::fs::OpenOptions::new().append(true).open(&file);
     match file_opt {
         Ok(mut file) => match file.write_all(contents.as_bytes()) {
             Ok(_) => {

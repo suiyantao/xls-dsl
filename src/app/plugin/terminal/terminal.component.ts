@@ -109,7 +109,7 @@ export class TerminalComponent implements OnInit {
   async copyClick($event: MouseEvent) {
     const copyText = this.message.map(x=>x.msg).join("\n");
     await writeText(copyText);
-    await message("复制成功");
+    await message("复制成功", { title:"", type: "info"});
   }
 
   scrollViewportChange($event: Event) {
