@@ -1,4 +1,6 @@
+use handlebars::Handlebars;
 use sonyflake::Sonyflake;
+use tera::Context;
 use std::sync::Mutex;
 
 use deno_core::{error::AnyError, extension, op2};
@@ -77,6 +79,23 @@ fn op_snowid() -> Result<String, AnyError> {
     let id = binding.next_id().unwrap();
     Ok(id.to_string())
 }
+
+#[op2]
+#[string]
+fn op_tera_template(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
+    let context = Context::from_value(data)?;
+    let res = tera::Tera::one_off(&template, &context, true)?;
+    Ok(res)
+}
+
+#[op2]
+#[string]
+fn handlebars_template(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
+    let mut hb = Handlebars::new();
+    hb.register_template_string("data", &template)?;
+    let res = hb.render("data", &data)?;
+    Ok(res)
+}
  
 
 extension!(
@@ -96,8 +115,9 @@ extension!(
         fs_funs::op_fs_write,
         fs_funs::op_fs_read_line,
         fs_funs::op_fs_append,
-        fs_funs::op_fs_create_file
-
+        fs_funs::op_fs_create_file,
+        op_tera_template,
+        handlebars_template
     ],
     esm_entry_point = "ext:runjs/runtime.js",
     esm = [dir "src", "runtime.js"]

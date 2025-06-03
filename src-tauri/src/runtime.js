@@ -17,6 +17,14 @@
     return core.ops.op_snowid(arg);
   }
 
+  globalThis.tera_template = (template, data) => {
+    return core.ops.op_tera_template(template, data);
+  }
+
+  globalThis.handlebars_template = (template, data) => {
+    return core.ops.handlebars_template(template, data);
+  }
+
   globalThis.console = {
     log: (...args) => {
       core.ops.println(`${args.toString()}`);

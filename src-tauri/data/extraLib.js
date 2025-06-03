@@ -172,3 +172,14 @@ function md5(content) {
  */
 function print_ln(content) {
 }
+
+
+/**
+ * 使用 Handlebars 模板引擎渲染模板。
+ * 
+ * @param {string} template - Handlebars 模板字符串。
+ * @param {object} data - 用于填充模板的数据对象。
+ * @return {string} - 渲染后的字符串。
+ */
+function handlebars_template(template, data){
+}
