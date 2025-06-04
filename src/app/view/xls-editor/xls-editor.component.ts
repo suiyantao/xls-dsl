@@ -37,15 +37,16 @@ import {TerminalComponent} from "../../plugin/terminal/terminal.component";
             })),
             transition("false=>true", [
                 sequence([
-                    style({display: "block", opacity: 0.1}),
-                    animate(500, style({opacity: 1}))
+                    style({ display: "block", opacity: 0.1 }),
+                    animate(500, style({ opacity: 1 }))
                 ])
             ]),
             transition('* => *', [
                 animate('0.2s ease')
             ])
         ])
-    ]
+    ],
+    standalone: false
 })
 export class XlsEditorComponent implements AfterViewInit, OnInit {
 

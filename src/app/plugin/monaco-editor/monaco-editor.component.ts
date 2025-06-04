@@ -9,10 +9,11 @@ import { resolveResource } from '@tauri-apps/api/path';
 import { readTextFile } from '@tauri-apps/api/fs';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-monaco-editor',
-  templateUrl: './monaco-editor.component.html',
-  styleUrls: ['./monaco-editor.component.css']
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-monaco-editor',
+    templateUrl: './monaco-editor.component.html',
+    styleUrls: ['./monaco-editor.component.css'],
+    standalone: false
 })
 export class MonacoEditorComponent implements OnInit, AfterViewInit {
 
