@@ -4,13 +4,13 @@
         <label data-tauri-drag-region class="select-none dark:text-[rgb(134,134,134)]   text-black antialiased text-sm font-mono">Xls Code</label>
     </div>
     <div class="flex absolute right-2 h-10 items-center select-none">
-        @if (leftFold) {
+        @if (leftFold()) {
             <app-codicon   iconName="layout-panel-off"  [rotate]="90" fontSize="18px" [showBorder]="true" (click)="lPanelClick($event)"></app-codicon>
         }@else {
             <app-codicon   iconName="layout-panel"     [rotate]="90" fontSize="18px"  [showBorder]="true" (click)="lPanelClick($event)"></app-codicon>
         }
         <div class="w-2"></div>
-        @if (bottomFold) {
+        @if (bottomFold()) {
             <app-codicon  iconName="layout-panel-off" fontSize="18px" [showBorder]="true" (click)="bPanelClick($event)"></app-codicon>
         }@else {
             <app-codicon   iconName="layout-panel" fontSize="18px"  [showBorder]="true" (click)="bPanelClick($event)"></app-codicon>

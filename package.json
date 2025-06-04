@@ -38,8 +38,8 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "^19.2.14",
-    "@angular/cli": "^19.2.14",
+    "@angular/build": "^20.0.0",
+    "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
     "@tauri-apps/api": "^1.5.3",
     "@types/jasmine": "~4.3.6",
