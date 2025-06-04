@@ -19,9 +19,19 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
 import {CdkContextMenuTrigger, CdkMenu, CdkMenuItem} from '@angular/cdk/menu';
 import {ScrollingModule} from '@angular/cdk/scrolling'
 import {OverlayModule} from '@angular/cdk/overlay';
+import {HeaderComponent} from './view/header/header.component';
 
 @NgModule({
-  declarations: [AppComponent, MonacoEditorComponent, TerminalComponent, XlsEditorComponent, MenuComponent, CodiconComponent, DialogComponent],
+  declarations: [
+    AppComponent,
+    MonacoEditorComponent,
+    TerminalComponent,
+    XlsEditorComponent,
+    MenuComponent,
+    CodiconComponent,
+    DialogComponent,
+    HeaderComponent
+  ],
   imports: [BrowserModule, MonacoEditorModule.forRoot(), FormsModule, InputNoSpaceDirective, FormsModule, AngularSplitModule, BrowserAnimationsModule, FontAwesomeModule, DragDropModule, ReactiveFormsModule, CdkContextMenuTrigger, CdkMenu, CdkMenuItem, OverlayModule, ScrollingModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
   providers: [MessageService],
