@@ -21,8 +21,11 @@
             </div>
         </div>
         <div #logViewP class="grow overflow-hidden relative">
+            <div>
+                
+            </div>
             <cdk-virtual-scroll-viewport   itemSize="20"  [style.height]="logViewP.clientHeight+'px'">
-                <div class="h-5 text-[13px] pr-1.5 flex " *cdkVirtualFor="let item of message;let index = index;">
+                <div class="h-5 text-[13px] pr-1.5 flex " *cdkVirtualFor="let item of messageProduct;let index = index;">
                     @if(item.logType == "error"){
                         <pre [style.width]="message.length.toString().length*8+'px'"  class="text-[rgb(32,109,136)] dark:text-[rgb(122,122,122)] text-right mx-3">{{index+1}}</pre><pre class="text-red-500 select-text">{{item.msg}}</pre>
                     } @else {

@@ -1,18 +1,19 @@
-import {ChangeDetectorRef, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
-import {appWindow} from "@tauri-apps/api/window";
-import {writeText} from '@tauri-apps/api/clipboard';
-import {message} from '@tauri-apps/api/dialog';
-import {RunLog} from 'src/app/modal/run-log';
-import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
-import {debounceTime, fromEvent, Subject, throttleTime} from "rxjs";
-import {MqType} from "../../enums/mq-type";
-import {MessageService} from "../../service/message.service";
-import  {v4 as uuidv4} from "uuid"
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { appWindow } from "@tauri-apps/api/window";
+import { writeText } from '@tauri-apps/api/clipboard';
+import { message } from '@tauri-apps/api/dialog';
+import { RunLog } from 'src/app/modal/run-log';
+import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
+import { BehaviorSubject, debounceTime, fromEvent, Subject, throttleTime } from "rxjs";
+import { MqType } from "../../enums/mq-type";
+import { MessageService } from "../../service/message.service";
+import { v4 as uuidv4 } from "uuid"
 
 @Component({
   selector: 'app-terminal',
   templateUrl: './terminal.component.html',
   styleUrl: './terminal.component.css',
+  standalone: false
 })
 export class TerminalComponent implements OnInit {
 
@@ -32,37 +33,42 @@ export class TerminalComponent implements OnInit {
 
   logSubject = new Subject<string>();
 
+  messageProduct = new Subject<RunLog[]>();
+  message: RunLog[] = [];
 
-  constructor(public messageSrv: MessageService, public changeDetectorRef:ChangeDetectorRef) { }
+  constructor(public messageSrv: MessageService, public changeDetectorRef: ChangeDetectorRef) {
+    this.messageProduct = new BehaviorSubject<RunLog[]>(new Array<RunLog>());
+  }
 
 
-  message = Array<RunLog>();
 
   async setAMsg(msg: RunLog) {
-    msg.msg.split(/[\n\r]/).forEach(x=>{
+    msg.msg.split(/[\n\r]/).forEach(x => {
       this.message.push({
         logType: msg.logType,
-        msg:x
+        msg: x
       });
     });
-    //this.logSubject.next(uuidv4().toString())
+    this.messageProduct.next(this.message);
   }
 
 
   async ngOnInit(): Promise<void> {
     await appWindow.listen<RunLog>('println', (data) => {
       const res = data.payload;
-      if(res.logType !== "result"){
+      if (res.logType !== "result") {
         this.setAMsg(res);
       }
-      if(res.logType === "result" || res.logType === "error") {
-         this.running = false;
-         this.logSubject.next(uuidv4().toString())
-         this.message = [...this.message];
-         this.changeDetectorRef.detectChanges();
-         setTimeout(()=>{
-           this.scrollViewport.scrollTo({bottom: 0, behavior: "smooth"});
-         },10);
+      if (res.logType === "result" || res.logType === "error") {
+        this.running = false;
+        // this.logSubject.next(uuidv4().toString())
+        // this.message = [...this.message];
+        this.changeDetectorRef.detectChanges();
+        setTimeout(() => {
+          this.scrollViewport.scrollTo({ bottom: 0, behavior: "smooth" });
+        }, 10);
+
+        
       }
     });
 
@@ -103,13 +109,14 @@ export class TerminalComponent implements OnInit {
 
   async clear($event: MouseEvent) {
     this.message = [];
+    this.messageProduct.next([]);
   }
 
 
   async copyClick($event: MouseEvent) {
-    const copyText = this.message.map(x=>x.msg).join("\n");
+    const copyText = this.message.map(x => x.msg).join("\n");
     await writeText(copyText);
-    await message("复制成功", { title:"", type: "info"});
+    await message("复制成功", { title: "", type: "info" });
   }
 
   scrollViewportChange($event: Event) {
