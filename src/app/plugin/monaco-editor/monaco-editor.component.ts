@@ -60,8 +60,6 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
 
   constructor(public messageSrv: MessageService) { }
 
-
-
   async onInit(editor: any) {
     this.editor = editor;
     const monaco = (window as any).monaco;
@@ -78,7 +76,6 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     })
     const resourcePath = await resolveResource('data/extraLib.js')
     const extraLib = await readTextFile(resourcePath)
-    console.log(extraLib);
     
     monaco.languages.typescript.javascriptDefaults.addExtraLib(extraLib);
     monaco.languages.registerCompletionItemProvider('javascript', {
@@ -94,7 +91,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
           {
             label: "fori",
             insertText: 'for(let i=0;i<${1:};i++){\n${2:}\n}',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            insertTextRules: this.monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             detail: "fori",
             sortText: "1",
           }
@@ -131,8 +128,6 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     });
 
     fromEvent(window, "resize").pipe(throttleTime(1000), debounceTime(1000)).subscribe(() => {
-      console.log(1111);
-
       this.fitEditor();
     })
   }
@@ -149,12 +144,18 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
   }
 
   private setVal(val: string): void {
+    if (!this.ngxMonacoEditor) {
+      return;
+    }
+    // 将值设置给Monaco Editor
     this.ngxMonacoEditor.writeValue(val);
+    // 滚动到顶部
+    this.editor.setScrollTop(0);
   }
 
   codeChange(value: string) {
     const params = { id: this.select_id, code: value };
-    invoke<FileInfo>('update_code_by_id', { ...params }).then(_ => { })
+    invoke('update_code_by_id', { ...params }).then(_ => { })
   }
 
 
