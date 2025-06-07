@@ -6,6 +6,5 @@
         </div>
     }
     
-    <ngx-monaco-editor class="my-code-editor" #ngxMonacoEditor [options]="editorOptions" (ngModelChange)="codeChange($event)" [(ngModel)]="code"
-        (onInit)="onInit($event)"></ngx-monaco-editor>
+    <ngx-monaco-editor class="my-code-editor" #ngxMonacoEditor [options]="editorOptions" (ngModelChange)="codeChange($event)" [(ngModel)]="code" (onInit)="onInit($event)"></ngx-monaco-editor>
 </div>

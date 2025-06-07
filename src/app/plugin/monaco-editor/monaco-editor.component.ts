@@ -1,12 +1,12 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import {invoke} from '@tauri-apps/api';
-import {EditorComponent} from 'ngx-monaco-editor';
 import {MqType} from 'src/app/enums/mq-type';
 import {FileInfo} from 'src/app/modal/file-info';
 import {MessageService} from 'src/app/service/message.service';
 import {debounceTime, fromEvent, throttleTime} from 'rxjs';
 import { resolveResource } from '@tauri-apps/api/path';
 import { readTextFile } from '@tauri-apps/api/fs';
+import { EditorComponent } from '../editor/editor.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,15 +64,15 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     this.editor = editor;
     const monaco = (window as any).monaco;
     monaco.languages.typescript.javascriptDefaults.setModeConfiguration({
-      codeActions: true,
+      codeActions: false,
       completionItems: true,
-      definitions: true,
+      definitions: false,
       diagnostics: true,
       documentHighlights: true,
       documentRangeFormattingEdits: true,
       signatureHelp: true,
       rename: true,
-      references: true
+      references: false
     })
     const resourcePath = await resolveResource('data/extraLib.js')
     const extraLib = await readTextFile(resourcePath)
@@ -150,7 +150,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     // 将值设置给Monaco Editor
     this.ngxMonacoEditor.writeValue(val);
     // 滚动到顶部
-    this.editor.setScrollTop(0);
+    this.ngxMonacoEditor.setScrollTop(0);
   }
 
   codeChange(value: string) {

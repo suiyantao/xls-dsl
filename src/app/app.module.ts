@@ -3,7 +3,6 @@ import {BrowserModule} from "@angular/platform-browser";
 
 import {AppComponent} from "./app.component";
 import {MonacoEditorComponent} from './plugin/monaco-editor/monaco-editor.component';
-import {MonacoEditorModule} from "ngx-monaco-editor";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {InputNoSpaceDirective} from "./directive/input-no-space.directive";
 import {AngularSplitModule} from 'angular-split';
@@ -20,21 +19,25 @@ import {CdkContextMenuTrigger, CdkMenu, CdkMenuItem} from '@angular/cdk/menu';
 import {ScrollingModule} from '@angular/cdk/scrolling'
 import {OverlayModule} from '@angular/cdk/overlay';
 import {HeaderComponent} from './view/header/header.component';
+import { EditorComponent } from "./plugin/editor/editor.component";
+import { NGX_MONACO_EDITOR_CONFIG } from "./plugin/editor/config";
+import { CommonModule } from "@angular/common";
 
 @NgModule({
   declarations: [
     AppComponent,
-    MonacoEditorComponent,
     TerminalComponent,
     XlsEditorComponent,
     MenuComponent,
     CodiconComponent,
     DialogComponent,
-    HeaderComponent
+    HeaderComponent,
+    EditorComponent,
+    MonacoEditorComponent
   ],
-  imports: [BrowserModule, MonacoEditorModule.forRoot(), FormsModule, InputNoSpaceDirective, FormsModule, AngularSplitModule, BrowserAnimationsModule, FontAwesomeModule, DragDropModule, ReactiveFormsModule, CdkContextMenuTrigger, CdkMenu, CdkMenuItem, OverlayModule, ScrollingModule],
+  imports: [BrowserModule,CommonModule, FormsModule, InputNoSpaceDirective, FormsModule, AngularSplitModule, BrowserAnimationsModule, FontAwesomeModule, DragDropModule, ReactiveFormsModule, CdkContextMenuTrigger, CdkMenu, CdkMenuItem, OverlayModule, ScrollingModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
-  providers: [MessageService],
+  providers: [MessageService,   { provide: NGX_MONACO_EDITOR_CONFIG, useValue: {} }],
   bootstrap: [AppComponent],
 })
 export class AppModule { }

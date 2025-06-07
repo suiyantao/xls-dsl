@@ -38,9 +38,6 @@ dependencies:
   '@fortawesome/free-solid-svg-icons':
     specifier: ^6.7.2
     version: 6.7.2
-  '@materia-ui/ngx-monaco-editor':
-    specifier: ^6.0.0
-    version: 6.0.0(@angular/core@17.3.12)(rxjs@7.8.2)
   '@tauri-apps/api':
     specifier: ^1.6.0
     version: 1.6.0
@@ -56,9 +53,6 @@ dependencies:
   monaco-editor:
     specifier: ^0.45.0
     version: 0.45.0
-  ngx-monaco-editor:
-    specifier: ^12.0.0
-    version: 12.0.0(@angular/common@17.3.12)(@angular/core@17.3.12)(monaco-editor@0.45.0)
   rxjs:
     specifier: ~7.8.2
     version: 7.8.2
@@ -68,15 +62,6 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
-  vscode-xterm:
-    specifier: 3.9.0-beta1
-    version: 3.9.0-beta1
-  xterm:
-    specifier: ^5.3.0
-    version: 5.3.0
-  xterm-addon-fit:
-    specifier: ^0.8.0
-    version: 0.8.0(xterm@5.3.0)
   zone.js:
     specifier: ~0.13.3
     version: 0.13.3
@@ -2167,17 +2152,6 @@ packages:
     dependencies:
       call-bind: 1.0.8
     dev: true
-
-  /@materia-ui/ngx-monaco-editor@6.0.0(@angular/core@17.3.12)(rxjs@7.8.2):
-    resolution: {integrity: sha512-gTqNQjOGznZxOC0NlmKdKSGCJuTts8YmK4dsTQAGc5IgIV7cZdQWiW6AL742h0ruED6q0cAunEYjXT6jzHBoIQ==}
-    peerDependencies:
-      '@angular/core': '>=13.0.0'
-      rxjs: '>=6.0.0'
-    dependencies:
-      '@angular/core': 17.3.12(rxjs@7.8.2)(zone.js@0.13.3)
-      rxjs: 7.8.2
-      tslib: 2.8.1
-    dev: false
 
   /@ngtools/webpack@17.3.17(@angular/compiler-cli@17.3.12)(typescript@5.2.2)(webpack@5.94.0):
     resolution: {integrity: sha512-LaO++U8DoqV36M0YLKhubc1+NqM8fyp5DN03k1uP9GvtRchP9+7bfG+IEEZiDFkCUh9lfzi1CiGvUHrN4MYcsA==}
@@ -5547,19 +5521,6 @@ packages:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: true
 
-  /ngx-monaco-editor@12.0.0(@angular/common@17.3.12)(@angular/core@17.3.12)(monaco-editor@0.45.0):
-    resolution: {integrity: sha512-/HXTILVwWvrk4OkT1p88nb+PGEqlecQot2VMTdSLbVW7A24fNZpDAF6tNR4Bp3V/abZjShDK8LfsqLePA0tPmw==}
-    peerDependencies:
-      '@angular/common': ^12.0.0
-      '@angular/core': ^12.0.0
-      monaco-editor: ^0.24.0
-    dependencies:
-      '@angular/common': 17.3.12(@angular/core@17.3.12)(rxjs@7.8.2)
-      '@angular/core': 17.3.12(rxjs@7.8.2)(zone.js@0.13.3)
-      monaco-editor: 0.45.0
-      tslib: 2.8.1
-    dev: false
-
   /nice-napi@1.0.2:
     resolution: {integrity: sha512-px/KnJAJZf5RuBGcfD+Sp2pAKq0ytz8j+1NehvgIGFkvtvFrDM3T8E4x/JJODXK9WZow8RRGrbA9QQ3hs+pDhA==}
     os: ['!win32']
@@ -7399,10 +7360,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /vscode-xterm@3.9.0-beta1:
-    resolution: {integrity: sha512-PMLI+4n6ysY2VB/6UF9j1OZ8RR4wATc+mdVFb1fEVWI4k6i6mdTNpMrd9U5cLJaswfr+hlql2PQL9EprhuKRNA==}
-    dev: false
-
   /watchpack@2.4.0:
     resolution: {integrity: sha512-Lcvm7MGST/4fup+ifyKi2hjyIAwcdI4HRgtvTpIUxBRhB+RFtUh8XtDOxUfctVCnhVi+QQj49i91OyvzkJl6cg==}
     engines: {node: '>=10.13.0'}
@@ -7677,20 +7634,6 @@ packages:
       utf-8-validate:
         optional: true
     dev: true
-
-  /xterm-addon-fit@0.8.0(xterm@5.3.0):
-    resolution: {integrity: sha512-yj3Np7XlvxxhYF/EJ7p3KHaMt6OdwQ+HDu573Vx1lRXsVxOcnVJs51RgjZOouIZOczTsskaS+CpXspK81/DLqw==}
-    deprecated: This package is now deprecated. Move to @xterm/addon-fit instead.
-    peerDependencies:
-      xterm: ^5.0.0
-    dependencies:
-      xterm: 5.3.0
-    dev: false
-
-  /xterm@5.3.0:
-    resolution: {integrity: sha512-8QqjlekLUFTrU6x7xck1MsPzPA571K5zNqWm0M0oroYEWVOptZ0+ubQSkQ3uxIEhcIHRujJy6emDWX4A7qyFzg==}
-    deprecated: This package is now deprecated. Move to @xterm/xterm instead.
-    dev: false
 
   /y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
