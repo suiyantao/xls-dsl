@@ -17,12 +17,10 @@
     return core.ops.op_snowid(arg);
   }
 
-  globalThis.tera_template = (template, data) => {
-    return core.ops.op_tera_template(template, data);
-  }
-
-  globalThis.handlebars_template = (template, data) => {
-    return core.ops.handlebars_template(template, data);
+  globalThis.Handlebars = {
+    render: (template, data) => {
+      return core.ops.handlebars_render(template, data);
+    }
   }
 
   globalThis.console = {

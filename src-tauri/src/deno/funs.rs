@@ -90,7 +90,7 @@ fn op_tera_template(#[string] template: String, #[serde] data: serde_json::Value
 
 #[op2]
 #[string]
-fn handlebars_template(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
+fn handlebars_render(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
     let mut hb = Handlebars::new();
     hb.register_template_string("data", &template)?;
     let res = hb.render("data", &data)?;
@@ -117,7 +117,7 @@ extension!(
         fs_funs::op_fs_append,
         fs_funs::op_fs_create_file,
         op_tera_template,
-        handlebars_template
+        handlebars_render
     ],
     esm_entry_point = "ext:runjs/runtime.js",
     esm = [dir "src", "runtime.js"]
