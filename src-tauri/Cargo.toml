@@ -32,10 +32,6 @@ deno_core = "=0.311"
 reqwest = { version = "0.12.19", features = ["blocking"] }
 tera = "1.20.0"
 handlebars = {version="6.3.2", features = ["string_helpers"] }
-tauri-plugin-fs = "2"
-tauri-plugin-http = "2"
-tauri-plugin-notification = "2"
-tauri-plugin-shell = "2"
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
 
