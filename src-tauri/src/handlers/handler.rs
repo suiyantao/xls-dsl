@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use crate::dao::models::RunLog;
 use chrono::Local;
 use lazy_static::lazy_static;
-use tauri::{WebviewWindow};
+use tauri::WebviewWindow;
 
 use crate::dao::file_dao;
 use crate::dao::models::{NewFile, XlsFile};
