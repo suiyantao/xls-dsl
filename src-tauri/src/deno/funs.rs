@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 use deno_core::{error::AnyError, extension, op2};
 
-use crate::{dao::models::RunLog, deno::{fs_funs, lib::PATH}, handler::APP, parse_xls::lib::ParseXls};
+use crate::{dao::models::RunLog, deno::{fs_funs, lib::XLS_PATH}, handler::APP, parse_xls::lib::ParseXls};
 
 
 lazy_static::lazy_static! {
@@ -21,7 +21,7 @@ lazy_static::lazy_static! {
 async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, AnyError> {
    
     if path == ""  {
-        path = PATH.lock().unwrap().get("path").unwrap().clone();
+        path = XLS_PATH.with(|path| path.borrow().clone());
     }
 
     let mut parse = ParseXls { xls_path: path };

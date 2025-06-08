@@ -1,8 +1,7 @@
 use deno_core::error::AnyError;
 use deno_core::url::Url;
-use std::collections::HashMap;
+use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Mutex;
 
 use crate::dao::models::XlsFile;
 use crate::dao::models::RunLog;
@@ -10,11 +9,10 @@ use crate::handler::APP;
 
 use super::funs::runjs;
 
-lazy_static::lazy_static! {
-    pub static ref PATH:Mutex<HashMap<String, String>> = {
-        let map = HashMap::new();
-        Mutex::new(map)
-    };
+ 
+
+thread_local! {
+    pub static XLS_PATH: RefCell<String> = RefCell::new(String::new());
 }
 
 
@@ -49,9 +47,10 @@ impl DenoRuntime {
         // 这里可以添加脚本执行的逻辑
         println!("Running script...");
 
-        PATH.lock()
-            .unwrap()
-            .insert("path".to_string(), self.file.xlx_template.clone());
+        XLS_PATH.with(|path| {
+            let mut path = path.borrow_mut();
+            *path = self.file.xlx_template.clone();
+        });
 
         let result = run_js(self.file.code.clone()).await;
 
