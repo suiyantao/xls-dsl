@@ -1,3 +1,3 @@
-pub(crate) mod lib;
-mod funs;
 mod fs_funs;
+mod funs;
+pub(crate) mod lib;

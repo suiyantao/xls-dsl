@@ -16,9 +16,9 @@ import {FileInfo} from 'src/app/modal/file-info';
 import {DialogComponent} from 'src/app/plugin/dialog/dialog.component';
 import {MonacoEditorComponent} from 'src/app/plugin/monaco-editor/monaco-editor.component';
 import {MessageService} from 'src/app/service/message.service';
-import {ask, open} from '@tauri-apps/api/dialog';
+import {ask, open} from '@tauri-apps/plugin-dialog';
 import {animate, sequence, state, style, transition, trigger} from '@angular/animations';
-import {invoke} from "@tauri-apps/api";
+import {invoke} from "@tauri-apps/api/core";
 import {TerminalComponent} from "../../plugin/terminal/terminal.component";
 
 
@@ -75,9 +75,7 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     messageSrv = inject(MessageService)
 
     ngOnInit() {
-        invoke<Array<FileInfo>>("find_all_file").then(res => {
-            console.log(res);
-            
+        invoke<Array<FileInfo>>("find_all_file").then(res => {            
             this.fileList = res;
         })
     }
@@ -137,7 +135,7 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     }
 
     async delFile($event: MouseEvent) {
-        const yes: boolean = await ask('你确定删除?', {title: '系统提示', type: 'warning'});
+        const yes: boolean = await ask('你确定删除?', {title: '系统提示', kind: 'warning'});
         if (yes) {
             const selectedFile = this.fileList.filter(x=>x.selected)[0];
             const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
@@ -228,9 +226,7 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
        if(!fileInfo){
            return
        }
-       invoke('run', {id: fileInfo.id}).then(data=>{
-            console.log(data);
-       });  
+       await invoke('run', {id: fileInfo.id});
     }
 
 }

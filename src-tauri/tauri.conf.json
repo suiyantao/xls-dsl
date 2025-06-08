@@ -2,77 +2,29 @@
   "build": {
     "beforeDevCommand": "pnpm start --port 1420",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist/xls-dsl",
-    "withGlobalTauri": false
+    "frontendDist": "../dist/xls-dsl",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Xls Code",
-    "version": "0.0.0"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": [
+      "data/extraLib.js"
+    ],
+    "icon": [
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   },
-  "tauri": {
+  "productName": "Xls Code",
+  "mainBinaryName": "Xls Code",
+  "version": "0.0.0",
+  "identifier": "jasonsui",
+  "plugins": {},
+  "app": {
     "macOSPrivateApi": true,
-    "allowlist": {
-      "all": false,
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": ["https://*", "http://*"]
-      },
-      "clipboard":{
-        "all": true,
-        "readText": true,
-        "writeText": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$RESOURCE/data/extraLib.js"],
-        "readFile": true
-      },
-      "path":{
-        "all": true
-      },
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "window": {
-        "all": true,
-        "close": false,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true,
-        "setClosable": false
-      },
-      "dialog": {
-        "all": false,
-        "ask": true,
-        "confirm": false,
-        "message": true,
-        "open": true,
-        "save": false
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "jasonsui",
-      "icon": [
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [
-        "data/extraLib.js"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
+    "withGlobalTauri": false,
     "windows": [
       {
         "fullscreen": false,
@@ -83,8 +35,12 @@
         "minHeight": 380,
         "minWidth": 750,
         "titleBarStyle": "Overlay",
-        "transparent": true
+        "transparent": true,
+        "useHttpsScheme": true
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

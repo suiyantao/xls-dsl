@@ -1,12 +1,17 @@
 use handlebars::Handlebars;
 use sonyflake::Sonyflake;
-use tera::Context;
 use std::sync::Mutex;
+use tera::Context;
+use tauri::Emitter;
 
 use deno_core::{error::AnyError, extension, op2};
 
-use crate::{dao::models::RunLog, deno::{fs_funs, lib::XLS_PATH}, handler::APP, parse_xls::lib::ParseXls};
-
+use crate::{
+    dao::models::RunLog,
+    deno::{fs_funs, lib::XLS_PATH},
+    handler::APP,
+    parse_xls::lib::ParseXls,
+};
 
 lazy_static::lazy_static! {
     static ref SNOW_ID:Mutex<Sonyflake> = {
@@ -14,13 +19,10 @@ lazy_static::lazy_static! {
     };
 }
 
-
-
 #[op2(async)]
 #[serde]
 async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, AnyError> {
-   
-    if path == ""  {
+    if path == "" {
         path = XLS_PATH.with(|path| path.borrow().clone());
     }
 
@@ -37,10 +39,6 @@ async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, An
         }
     }
 }
-
- 
-
- 
 
 #[op2(fast)]
 fn println(#[string] str: String) -> Result<(), AnyError> {
@@ -82,7 +80,10 @@ fn op_snowid() -> Result<String, AnyError> {
 
 #[op2]
 #[string]
-fn op_tera_template(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
+fn op_tera_template(
+    #[string] template: String,
+    #[serde] data: serde_json::Value,
+) -> Result<String, AnyError> {
     let context = Context::from_value(data)?;
     let res = tera::Tera::one_off(&template, &context, true)?;
     Ok(res)
@@ -90,13 +91,15 @@ fn op_tera_template(#[string] template: String, #[serde] data: serde_json::Value
 
 #[op2]
 #[string]
-fn handlebars_render(#[string] template: String, #[serde] data: serde_json::Value) -> Result<String, AnyError> {
+fn handlebars_render(
+    #[string] template: String,
+    #[serde] data: serde_json::Value,
+) -> Result<String, AnyError> {
     let mut hb = Handlebars::new();
     hb.register_template_string("data", &template)?;
     let res = hb.render("data", &data)?;
     Ok(res)
 }
- 
 
 extension!(
     runjs,
@@ -122,4 +125,3 @@ extension!(
     esm_entry_point = "ext:runjs/runtime.js",
     esm = [dir "src", "runtime.js"]
 );
-

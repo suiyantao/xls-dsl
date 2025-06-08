@@ -34,7 +34,7 @@ impl ParseXls {
     pub fn read_all(&mut self) -> anyhow::Result<Value> {
         let mut workbook: Xlsx<_> = open_workbook(self.xls_path.as_str())?;
         let mut sheets = Vec::new();
-        workbook.worksheets().iter().for_each(|(_, sheet_data)|{
+        workbook.worksheets().iter().for_each(|(_, sheet_data)| {
             let mut row_data_ve: Vec<JsonObject> = vec![];
             sheet_data.rows().for_each(|x| {
                 let mut row_data: JsonObject = JsonObject::new();

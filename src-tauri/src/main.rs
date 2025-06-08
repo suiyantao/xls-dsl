@@ -3,9 +3,9 @@
 
 // mod v8;
 
-mod deno;
 mod collections;
 mod dao;
+mod deno;
 mod handlers;
 mod parse_xls;
 
@@ -13,15 +13,21 @@ use handlers::handler::{self, APP};
 
 use crate::dao::db;
 use core::result::Result::Ok;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
-
- 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_fs::init())
         .setup(|_app| {
             db::init();
-            APP.lock().unwrap().insert("window".to_string(), _app.get_window("main").unwrap().clone());
+            APP.lock().unwrap().insert(
+                "window".to_string(),
+                _app.get_webview_window("main").unwrap().clone(),
+            );
             Ok({})
         })
         .invoke_handler(tauri::generate_handler![
@@ -37,4 +43,3 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-

@@ -1,11 +1,11 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
-import {invoke} from '@tauri-apps/api';
+import {invoke} from '@tauri-apps/api/core';
 import {MqType} from 'src/app/enums/mq-type';
 import {FileInfo} from 'src/app/modal/file-info';
 import {MessageService} from 'src/app/service/message.service';
 import {debounceTime, fromEvent, throttleTime} from 'rxjs';
 import { resolveResource } from '@tauri-apps/api/path';
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile } from '@tauri-apps/plugin-fs';
 import { EditorComponent } from '../editor/editor.component';
 
 @Component({

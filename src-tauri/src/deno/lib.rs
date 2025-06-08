@@ -3,18 +3,16 @@ use deno_core::url::Url;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::dao::models::XlsFile;
 use crate::dao::models::RunLog;
+use crate::dao::models::XlsFile;
 use crate::handler::APP;
+use tauri::Emitter;
 
 use super::funs::runjs;
-
- 
 
 thread_local! {
     pub static XLS_PATH: RefCell<String> = RefCell::new(String::new());
 }
-
 
 pub(crate) async fn run_js(code: String) -> Result<(), AnyError> {
     let main_module = Url::parse("file://")?;
