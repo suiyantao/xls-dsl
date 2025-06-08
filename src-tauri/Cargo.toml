@@ -22,14 +22,14 @@ actix-rt = "2.9.0"
 lazy_static = "1.4.0"
 diesel = {version = "2.1.4", features = ["sqlite", "chrono"] }
 chrono = {version = "0.4.31", features = ["serde"] }
-env = "0.0.0"
+env = "1.0.1"
 diesel_migrations = "2.1.0"
-dirs = "5.0.1"
-sonyflake = "0.2.0"
+dirs = "6.0.0"
+sonyflake = "0.3.0"
 uuid = {version = "1.6.1", features = ["v4"] }
 md5 = "0.7.0"
 deno_core = "=0.311"
-reqwest = { version = "0.12.3", features = ["blocking"] }
+reqwest = { version = "0.12.19", features = ["blocking"] }
 tera = "1.20.0"
 handlebars = {version="6.3.2", features = ["string_helpers"] }
 tauri-plugin-fs = "2"

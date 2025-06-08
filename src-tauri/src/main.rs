@@ -13,7 +13,7 @@ use handlers::handler::{self, APP};
 
 use crate::dao::db;
 use core::result::Result::Ok;
-use tauri::{Emitter, Manager};
+use tauri::Manager;
 
 fn main() {
     tauri::Builder::default()
