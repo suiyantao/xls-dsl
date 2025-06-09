@@ -34,6 +34,7 @@ tera = "1.20.0"
 handlebars = {version="6.3.2", features = ["string_helpers"] }
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

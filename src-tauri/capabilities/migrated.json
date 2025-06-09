@@ -46,6 +46,11 @@
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:default",
-    "dialog:default"
+    "dialog:default",
+    "fs:default",
+    "fs:allow-desktop-read-recursive",
+    "fs:allow-desktop-meta-recursive",
+    "fs:allow-resource-read-recursive",
+    "fs:allow-resource-meta-recursive"
   ]
 }

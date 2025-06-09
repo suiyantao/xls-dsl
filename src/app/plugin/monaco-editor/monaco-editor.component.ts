@@ -91,7 +91,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
           {
             label: "fori",
             insertText: 'for(let i=0;i<${1:};i++){\n${2:}\n}',
-            insertTextRules: this.monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             detail: "fori",
             sortText: "1",
           }
