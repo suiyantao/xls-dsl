@@ -1,11 +1,14 @@
 use deno_core::error::AnyError;
 use deno_core::url::Url;
+use lazy_static::lazy_static;
+use tauri::WebviewWindow;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use crate::dao::models::RunLog;
 use crate::dao::models::XlsFile;
-use crate::handler::APP;
 use tauri::Emitter;
 
 use super::funs::runjs;
@@ -13,6 +16,19 @@ use super::funs::runjs;
 thread_local! {
     pub static XLS_PATH: RefCell<String> = RefCell::new(String::new());
 }
+
+lazy_static! {
+    pub static ref WINDOW: Arc<Mutex<Option<WebviewWindow>>> = Arc::new(Mutex::new(None));
+}
+
+pub(crate) fn emit_log(event: &str, log: RunLog) {
+    if let Some(w) = WINDOW.lock().unwrap().as_ref() {
+        w.emit(event, log)
+           .unwrap();
+    }
+}
+
+
 
 pub(crate) async fn run_js(code: String) -> Result<(), AnyError> {
     let main_module = Url::parse("file://")?;
@@ -55,16 +71,11 @@ impl DenoRuntime {
         match result {
             Ok(_) => {
                 println!("Successfully executed JavaScript");
-                if let Some(w) = APP.lock().unwrap().get("window") {
-                    w.emit("println", RunLog::result("".to_string())).unwrap();
-                }
+                emit_log("println", RunLog::result("".to_string()));
             }
             Err(err) => {
                 eprintln!("Error executing JavaScript: {}", err);
-                if let Some(w) = APP.lock().unwrap().get("window") {
-                    w.emit("println", RunLog::error(format!("{:?}", err)))
-                        .unwrap();
-                }
+                emit_log("println", RunLog::error(format!("{:?}", err)));
             }
         }
         Ok(())

@@ -1,22 +1,10 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-
 use crate::dao::models::RunLog;
 use chrono::Local;
-use lazy_static::lazy_static;
-use tauri::WebviewWindow;
 
 use crate::dao::file_dao;
 use crate::dao::models::{NewFile, XlsFile};
-use crate::deno::lib::DenoRuntime;
-use tauri::Emitter;
+use crate::deno::lib::{emit_log, DenoRuntime};
 
-lazy_static! {
-    pub static ref APP: Arc<Mutex<HashMap<String, WebviewWindow>>> = {
-        let map = HashMap::new();
-        Arc::new(Mutex::new(map))
-    };
-}
 
 #[tauri::command]
 pub(crate) fn find_all_file() -> Vec<XlsFile> {
@@ -68,19 +56,12 @@ pub(crate) fn run(id: i32) -> Result<String, String> {
         actix_rt::System::new().block_on(async {
             let res = DenoRuntime::new(file).run_script().await;
             match res {
-                Ok(_) => match APP.lock().unwrap().get("window") {
-                    Some(w) => {
-                        w.emit("println", RunLog::result("success".to_string()))
-                            .unwrap();
-                    }
-                    _ => (),
+                Ok(_) => {
+                    emit_log("println", RunLog::result("success".to_string()));
                 },
                 Err(e) => {
                     eprintln!("Error running script: {}", e);
-                    if let Some(w) = APP.lock().unwrap().get("window") {
-                        w.emit("println", RunLog::error(format!("{:?}", e)))
-                            .unwrap();
-                    }
+                    emit_log("println", RunLog::error(format!("{:?}", e)));
                 }
             }
         });

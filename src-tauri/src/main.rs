@@ -9,9 +9,8 @@ mod deno;
 mod handlers;
 mod parse_xls;
 
-use handlers::handler::{self, APP};
 
-use crate::dao::db;
+use crate::{dao::db, deno::lib::WINDOW, handlers::handler::{self}};
 use core::result::Result::Ok;
 use tauri::Manager;
 
@@ -22,9 +21,8 @@ fn main() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|_app| {
             db::init();
-            APP.lock().unwrap().insert(
-                "window".to_string(),
-                _app.get_webview_window("main").unwrap().clone(),
+            let _ = WINDOW.lock().unwrap().insert(
+                _app.get_webview_window("main").unwrap().clone()
             );
             Ok({})
         })

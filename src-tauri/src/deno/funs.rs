@@ -1,15 +1,13 @@
 use handlebars::Handlebars;
 use sonyflake::Sonyflake;
 use std::sync::Mutex;
-use tauri::Emitter;
 use tera::Context;
 
 use deno_core::{error::AnyError, extension, op2};
 
 use crate::{
     dao::models::RunLog,
-    deno::{fs_funs, lib::XLS_PATH},
-    handler::APP,
+    deno::{fs_funs, lib::{emit_log, XLS_PATH}},
     parse_xls::lib::ParseXls,
 };
 
@@ -42,17 +40,13 @@ async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, An
 
 #[op2(fast)]
 fn println(#[string] str: String) -> Result<(), AnyError> {
-    if let Some(w) = APP.lock().unwrap().get("window") {
-        w.emit("println", RunLog::log(str)).unwrap();
-    }
+    emit_log("println", RunLog::log(str));
     Ok(())
 }
 
 #[op2(fast)]
 fn eprintln(#[string] str: String) -> Result<(), AnyError> {
-    if let Some(w) = APP.lock().unwrap().get("window") {
-        w.emit("println", RunLog::error(str)).unwrap();
-    }
+    emit_log("eprintln", RunLog::error(str));
     Ok(())
 }
 
