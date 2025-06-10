@@ -94,9 +94,20 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             detail: "fori",
             sortText: "1",
+          },
+          {
+            label: "log",
+            insertText: 'console.log(${1:});',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: "log",
+            sortText: "2",
           }
         ];
-        const suggestions = completionItemList.filter((x: any) =>  x.label.concat(word));
+        const suggestions = completionItemList.filter((x: any) =>  {
+          return (x.label as string).includes(preStr)
+        });
+        console.log(suggestions);
+        
         return {
           suggestions: [...suggestions]
         }
