@@ -61,6 +61,32 @@ const fs = {
     create_dir: function (path) {
     },
     /**
+     * 读取指定目录中的所有文件和子目录。
+     *
+     * @param {string} path 要读取的目录的完整路径。
+     * @return {Array<string>} 一个Promise对象，解析为一个字符串数组，包含目录中的所有文件和子目录的名称。 
+     */
+    read_dir: function (path) {  
+    },
+    /**
+     * 检查指定路径是否为一个目录。
+     *
+     * @param {string} path 要检查的目录的完整路径。
+     * @return {boolean} 若路径是一个目录则返回true，否则返回false。
+     */
+    is_dir: function (path) {
+        
+    },
+    /**
+     * 检查指定路径是否为一个文件。
+     *
+     * @param {string} path 要检查的文件的完整路径。
+     * @return {boolean} 若路径是一个文件则返回true，否则返回false。
+     */
+    is_file: function (path) {
+        
+    },
+    /**
      * 递归创建目录，若目录已存在则不会报错，会自动跳过已存在的目录。
      * 
      * @param {string} path 要创建的目录的完整路径，支持多级目录。

@@ -69,6 +69,45 @@ pub fn op_fs_read_to_string(#[string] path: String) -> Result<String, AnyError> 
     }
 }
 
+// 读取所有目录
+/// # 参数
+/// - `path`: 要读取的目录的路径，以字符串形式表示。
+#[op2]
+#[serde]
+pub fn op_fs_read_dir(#[string] path: String) -> Result<Vec<String>, AnyError> {
+    let dir = fs::read_dir(path);
+    match dir {
+        Ok(d) => {
+            let mut res = Vec::new();
+            for entry in d {
+                let entry = entry?;
+                let path = entry.path();
+                res.push(path.to_str().unwrap().to_string());
+            }
+            return Ok(res);
+        }
+        Err(e) => {
+            return Err(AnyError::from(e));
+        }
+    }
+}
+
+// 判断是否是目录
+/// # 参数
+/// - `path`: 要判断的路径，以字符串形式表示。
+#[op2(fast)]
+pub fn op_fs_is_dir(#[string] path: String) -> Result<bool, AnyError> {
+    Ok(fs::metadata(path)?.is_dir())
+}
+
+// 判断是否是文件
+/// # 参数
+/// - `path`: 要判断的路径，以字符串形式表示。
+#[op2(fast)]
+pub fn op_fs_is_file(#[string] path: String) -> Result<bool, AnyError> {
+    Ok(fs::metadata(path)?.is_file())
+}
+
 // 删除单个目录，目录必须为空
 /// # 参数
 /// - `path`: 要删除的空目录的路径，以字符串形式表示。

@@ -48,6 +48,15 @@
     create_dir: (path) => {
       return core.ops.op_fs_create_dir(path);
     },
+    read_dir: (path) => {
+      return core.ops.op_fs_read_dir(path);
+    },
+    is_dir: (path) => {
+      return core.ops.op_fs_is_dir(path);
+    },
+    is_file: (path) => {
+      return core.ops.op_fs_is_file(path); 
+    },
     create_dir_all: (path) => {
       return core.ops.op_fs_create_dir_all(path);
     },
