@@ -21,9 +21,6 @@
             </div>
         </div>
         <div #logViewP class="grow overflow-hidden relative">
-            <div>
-                
-            </div>
             <cdk-virtual-scroll-viewport   itemSize="20"  [style.height]="logViewP.clientHeight+'px'">
                 <div class="h-5 text-[13px] pr-1.5 flex " *cdkVirtualFor="let item of messageProduct;let index = index;">
                     @if(item.logType == "error"){

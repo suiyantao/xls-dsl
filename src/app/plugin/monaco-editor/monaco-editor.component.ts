@@ -138,7 +138,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
       }
     });
 
-    fromEvent(window, "resize").pipe(throttleTime(1000), debounceTime(1000)).subscribe(() => {
+    fromEvent(window, "resize").pipe(debounceTime(100)).subscribe(() => {
       this.fitEditor();
     })
   }
