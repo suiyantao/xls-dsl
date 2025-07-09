@@ -44,20 +44,18 @@ jobs:
           packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
           version: 1.0
 
-      - name: install frontend dependencies
-        uses: bahmutov/npm-install@v1
-        with:
-          working-directory: ./frontend
+      - name: install PNPM
+        run: npm i -g pnpm
 
-      - name: cache backend dependencies
-        uses: Swatinem/rust-cache@v2
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v4
         with:
-          workspaces: "./backend -> target"
-
-      - name: install optional dependencies (npm bug fix)
-        run: |
-          npm install @rollup/rollup-linux-x64-gnu --prefix frontend --save-optional
-          npm install @rollup/rollup-win32-x64-msvc --prefix frontend --save-optional
+          node-version: 'lts/*'
+          cache: 'pnpm' # Set this to npm, yarn or pnpm.
+          
+      - name: Install frontend dependencies
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: pnpm install --force # Change this to npm, yarn or pnpm.
 
       - uses: tauri-apps/tauri-action@v0
         env:
