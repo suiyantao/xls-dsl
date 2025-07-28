@@ -9,8 +9,11 @@ mod deno;
 mod handlers;
 mod parse_xls;
 
-
-use crate::{dao::db, deno::lib::WINDOW, handlers::handler::{self}};
+use crate::{
+    dao::db,
+    deno::lib::WINDOW,
+    handlers::handler::{self},
+};
 use core::result::Result::Ok;
 use tauri::Manager;
 
@@ -19,11 +22,18 @@ fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .setup(|_app| {
+        .setup(|app| {
+            #[cfg(debug_assertions)] // only include this code on debug builds
+            {
+                let window = app.get_webview_window("main").unwrap();
+                window.open_devtools();
+                window.close_devtools();
+            }
             db::init();
-            let _ = WINDOW.lock().unwrap().insert(
-                _app.get_webview_window("main").unwrap().clone()
-            );
+            let _ = WINDOW
+                .lock()
+                .unwrap()
+                .insert(app.get_webview_window("main").unwrap().clone());
             Ok({})
         })
         .invoke_handler(tauri::generate_handler![
