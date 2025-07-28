@@ -2,7 +2,7 @@
   "build": {
     "beforeDevCommand": "pnpm start --port 1420",
     "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist/xls-dsl",
+    "frontendDist": "../dist/xls-dsl/browser",
     "devUrl": "http://localhost:1420"
   },
   "bundle": {
