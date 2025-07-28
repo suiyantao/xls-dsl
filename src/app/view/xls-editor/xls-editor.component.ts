@@ -11,16 +11,16 @@ import {
 } from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {IOutputData, SplitAreaDirective, SplitComponent} from 'angular-split';
-import {MqType} from 'src/app/enums/mq-type';
-import {FileInfo} from 'src/app/modal/file-info';
-import {DialogComponent} from 'src/app/plugin/dialog/dialog.component';
-import {MonacoEditorComponent} from 'src/app/plugin/monaco-editor/monaco-editor.component';
-import {MessageService} from 'src/app/service/message.service';
 import {ask, open} from '@tauri-apps/plugin-dialog';
 import {animate, sequence, state, style, transition, trigger} from '@angular/animations';
 import {invoke} from "@tauri-apps/api/core";
 import {TerminalComponent} from "../../plugin/terminal/terminal.component";
 import { Menu, MenuItem } from '@tauri-apps/api/menu';
+import { MonacoEditorComponent } from '../../plugin/monaco-editor/monaco-editor.component';
+import { DialogComponent } from '../../plugin/dialog/dialog.component';
+import { FileInfo } from '../../modal/file-info';
+import { MessageService } from '../../service/message.service';
+import { MqType } from '../../enums/mq-type';
 
 
 @Component({

@@ -1,7 +1,6 @@
 import {CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
 import {AppComponent} from "./app.component";
-import {MonacoEditorComponent} from './plugin/monaco-editor/monaco-editor.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {InputNoSpaceDirective} from "./directive/input-no-space.directive";
 import {AngularSplitModule} from 'angular-split';
@@ -21,6 +20,7 @@ import {HeaderComponent} from './view/header/header.component';
 import { EditorComponent } from "./plugin/editor/editor.component";
 import { NGX_MONACO_EDITOR_CONFIG } from "./plugin/editor/config";
 import { CommonModule } from "@angular/common";
+import { MonacoEditorComponent } from "./plugin/monaco-editor/monaco-editor.component";
 
 @NgModule({
   declarations: [

@@ -2,12 +2,12 @@ import { ChangeDetectorRef, Component, ElementRef, EventEmitter, OnInit, Output,
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { message } from '@tauri-apps/plugin-dialog';
-import { RunLog } from 'src/app/modal/run-log';
 import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
 import { BehaviorSubject, debounceTime, fromEvent, Subject, throttleTime } from "rxjs";
 import { MqType } from "../../enums/mq-type";
 import { MessageService } from "../../service/message.service";
 import { v4 as uuidv4 } from "uuid"
+import { RunLog } from '../../modal/run-log';
 const appWindow = getCurrentWebviewWindow()
 
 @Component({

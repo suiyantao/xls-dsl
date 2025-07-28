@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { MqType } from "src/app/enums/mq-type";
-import { MessageService } from "src/app/service/message.service";
+import { MessageService } from "../../service/message.service";
+import { MqType } from "../../enums/mq-type";
 
 @Component({
   selector: 'app-header',
