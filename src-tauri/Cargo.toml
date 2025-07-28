@@ -43,6 +43,8 @@ custom-protocol = ["tauri/custom-protocol"]
 
 
 [profile.release]
-strip = true
-opt-level = 'z'
-lto = true
+opt-level = 'z'          # 优化二进制大小而非速度
+strip = true             # 移除调试符号
+panic = 'abort'          # 遇到 panic 时终止程序而非展开栈，减少二进制体积
+lto = true               # 启用全程序优化（Link Time Optimization）
+codegen-units = 1        # 减少代码生成单元，提升优化效果

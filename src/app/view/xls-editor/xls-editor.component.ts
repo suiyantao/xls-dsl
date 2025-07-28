@@ -20,6 +20,7 @@ import {ask, open} from '@tauri-apps/plugin-dialog';
 import {animate, sequence, state, style, transition, trigger} from '@angular/animations';
 import {invoke} from "@tauri-apps/api/core";
 import {TerminalComponent} from "../../plugin/terminal/terminal.component";
+import { Menu, MenuItem } from '@tauri-apps/api/menu';
 
 
 @Component({
@@ -61,6 +62,29 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     @ViewChildren("fileItem") terminalComponent!: TerminalComponent
 
     menuShow: boolean = false;
+
+    menu = Menu.new({
+        items: [
+            {
+                text: '新建',
+                action: () => {
+                    this.addFile(new MouseEvent('click'));
+                }
+            },
+            {
+                text: '修改',
+                action: () => {
+                    this.editFile(new MouseEvent('click'));
+                }
+            },
+            {
+                text: '删除',
+                action: () => {
+                    this.delFile(new MouseEvent('click'));
+                }
+            }
+        ]
+    });
 
     xlsId!: number;
 
@@ -202,7 +226,7 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
         //this.monacoEditor.setVal(filInfo.code as string);
     }
 
-    fileContextmenu(event: MouseEvent, filInfo: FileInfo) {
+    async fileContextmenu(event: MouseEvent, filInfo: FileInfo) {
         filInfo.selected = true;
         this.fileList.forEach(x => {
             if (x != filInfo) {
@@ -210,10 +234,13 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
             }
         })
         event.preventDefault();
-        this.menuShow = true;
-        const menu = this.fileContentMenu.nativeElement as HTMLElement;
-        menu.style.left = event.pageX + 'px';
-        menu.style.top = event.pageY + 'px';
+        let menu =  await this.menu;
+        menu.popup()
+
+        // this.menuShow = true;
+        // const menu = this.fileContentMenu.nativeElement as HTMLElement;
+        // menu.style.left = event.pageX + 'px';
+        // menu.style.top = event.pageY + 'px';
     }
 
     @HostListener('document:click', ['$event'])
