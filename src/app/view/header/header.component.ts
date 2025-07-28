@@ -3,8 +3,9 @@ import { MessageService } from "../../service/message.service";
 import { MqType } from "../../enums/mq-type";
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html'
+    selector: 'app-header',
+    templateUrl: './header.component.html',
+    standalone: false
 })
 export class HeaderComponent {
   

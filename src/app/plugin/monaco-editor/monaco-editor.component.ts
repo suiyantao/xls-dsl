@@ -9,10 +9,11 @@ import { MqType } from '../../enums/mq-type';
 import { FileInfo } from '../../modal/file-info';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-monaco-editor',
-  templateUrl: './monaco-editor.component.html',
-  styleUrls: ['./monaco-editor.component.css']
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-monaco-editor',
+    templateUrl: './monaco-editor.component.html',
+    styleUrls: ['./monaco-editor.component.css'],
+    standalone: false
 })
 export class MonacoEditorComponent implements OnInit, AfterViewInit {
 

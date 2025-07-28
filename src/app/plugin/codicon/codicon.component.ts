@@ -1,9 +1,10 @@
 import {booleanAttribute, Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'app-codicon',
-  templateUrl: './codicon.component.html',
-  styleUrl: './codicon.component.css'
+    selector: 'app-codicon',
+    templateUrl: './codicon.component.html',
+    styleUrl: './codicon.component.css',
+    standalone: false
 })
 export class CodiconComponent {
 

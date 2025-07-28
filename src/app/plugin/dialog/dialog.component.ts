@@ -2,29 +2,30 @@ import {animate, sequence, state, style, transition, trigger} from '@angular/ani
 import {Component, ElementRef, HostListener, Input, ViewChild} from '@angular/core';
 
 @Component({
-  selector: 'app-dialog',
-  templateUrl: './dialog.component.html',
-  styleUrl: './dialog.component.css',
-  animations:[
-    trigger('openClose', [
-      state('true', style({
-        opacity: 1,
-      })),
-      state('false', style({
-        opacity: 0,
-        display: "none" 
-      })),
-      transition("false=>true",[
-        sequence([
-          style({display:"block", opacity: 0.1}),
-          animate(500, style({opacity:1}))
+    selector: 'app-dialog',
+    templateUrl: './dialog.component.html',
+    styleUrl: './dialog.component.css',
+    animations: [
+        trigger('openClose', [
+            state('true', style({
+                opacity: 1,
+            })),
+            state('false', style({
+                opacity: 0,
+                display: "none"
+            })),
+            transition("false=>true", [
+                sequence([
+                    style({ display: "block", opacity: 0.1 }),
+                    animate(500, style({ opacity: 1 }))
+                ])
+            ]),
+            transition('* => *', [
+                animate('0.5s ease')
+            ])
         ])
-      ]),
-      transition('* => *', [
-        animate('0.5s ease')
-      ])
-    ])
-  ]
+    ],
+    standalone: false
 })
 export class DialogComponent{
 

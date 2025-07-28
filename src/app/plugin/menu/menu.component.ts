@@ -6,15 +6,14 @@ import {isPermissionGranted, requestPermission, sendNotification} from '@tauri-a
     selector: 'app-menu',
     templateUrl: './menu.component.html',
     styleUrls: ['./menu.component.css'],
-    animations:[
+    animations: [
         trigger('selectTag', [
             state('xlsEditor', style({
-                top : '40px'
+                top: '40px'
             })),
             state('debug', style({
-                top : '96px'
+                top: '96px'
             })),
-          
             transition('* => *', [
                 animate(100)
             ]),
@@ -22,7 +21,8 @@ import {isPermissionGranted, requestPermission, sendNotification} from '@tauri-a
             //     animate(500)
             // ]),
         ])
-    ]
+    ],
+    standalone: false
 })
 export class MenuComponent implements OnInit {
 
