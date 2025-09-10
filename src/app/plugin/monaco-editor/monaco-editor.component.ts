@@ -67,13 +67,13 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     monaco.languages.typescript.javascriptDefaults.setModeConfiguration({
       codeActions: false,
       completionItems: true,
-      definitions: false,
+      definitions: true,
       diagnostics: true,
       documentHighlights: true,
       documentRangeFormattingEdits: true,
       signatureHelp: true,
       rename: true,
-      references: false
+      references: true
     })
     const resourcePath = await resolveResource('data/extraLib.js')
     const extraLib = await readTextFile(resourcePath)
