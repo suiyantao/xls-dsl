@@ -1,4 +1,4 @@
-use calamine::{open_workbook, Reader, Xlsx};
+use calamine::{open_workbook, DataType, Reader, Xlsx};
 use lazy_static::lazy_static;
 use serde_json::{json, Map, Number, Value};
 
@@ -57,7 +57,20 @@ impl ParseXls {
                             index_s.clone(),
                             Value::String(ele.get_string().unwrap().to_string()),
                         );
-                    } else {
+                    } else if ele.is_empty() {
+                        row_data.insert(index_s.clone(), Value::Null);
+                    } else if ele.is_datetime(){
+                        println!("{}", ele.get_datetime().unwrap());
+                        let datetime = ele.as_datetime().unwrap();
+                        // 格式化为 yyyy-mm-dd 格式
+                        let formatted = datetime.format("%Y-%m-%d");
+                        row_data.insert(index_s.clone(), Value::String(formatted.to_string()));
+                    } else if ele.is_datetime_iso(){
+                        let datetime = ele.as_datetime().unwrap();
+                        // 格式化为 yyyy-mm-dd 格式
+                        let formatted = datetime.format("%Y-%m-%d");
+                        row_data.insert(index_s.clone(), Value::String(formatted.to_string()));
+                    }  else{
                         row_data.insert(index_s.clone(), Value::Null);
                     }
                 }
