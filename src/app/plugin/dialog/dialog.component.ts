@@ -9,19 +9,32 @@ import {Component, ElementRef, HostListener, Input, ViewChild} from '@angular/co
         trigger('openClose', [
             state('true', style({
                 opacity: 1,
+                transform: 'scale(1) translateY(0)'
             })),
             state('false', style({
                 opacity: 0,
+                transform: 'scale(0.95) translateY(-10px)',
                 display: "none"
             })),
             transition("false=>true", [
                 sequence([
-                    style({ display: "block", opacity: 0.1 }),
-                    animate(500, style({ opacity: 1 }))
+                    style({ display: "block", opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
+                    animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, transform: 'scale(1) translateY(0)' }))
                 ])
             ]),
-            transition('* => *', [
-                animate('0.5s ease')
+            transition("true=>false", [
+                animate('200ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }))
+            ])
+        ]),
+        trigger('backdropAnimation', [
+            state('true', style({ opacity: 1 })),
+            state('false', style({ opacity: 0 })),
+            transition('false => true', [
+                style({ opacity: 0 }),
+                animate('300ms ease-out')
+            ]),
+            transition('true => false', [
+                animate('200ms ease-in')
             ])
         ])
     ],
@@ -48,9 +61,13 @@ export class DialogComponent{
     this.title = title;
   }
 
+  onBackdropClick() {
+    this.close();
+  }
+
   @HostListener('click', ['$event.target'])
-  onClick(target: HTMLElement): void {
-    if (target.matches('.dialog-overlay')) {
+  onClick(target: EventTarget | null): void {
+    if (target instanceof HTMLElement && target.matches('.dialog-overlay')) {
       this.close();
     }
   }

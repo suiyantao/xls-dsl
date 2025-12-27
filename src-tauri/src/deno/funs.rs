@@ -7,7 +7,7 @@ use deno_core::{error::AnyError, extension, op2};
 
 use crate::{
     dao::models::RunLog,
-    deno::{fs_funs, lib::{emit_log, XLS_PATH}},
+    deno::{fs_funs, http_funs, lib::{XLS_PATH, emit_log}},
     parse_xls::lib::ParseXls,
 };
 
@@ -38,15 +38,48 @@ async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, An
     }
 }
 
-#[op2(fast)]
-fn println(#[string] str: String) -> Result<(), AnyError> {
-    emit_log("println", RunLog::log(str));
+fn body_to_string(body: Option<serde_json::Value>) -> String {
+    match body {
+        Some(body) => {
+            if body.is_string() {
+                // 如果是字符串，直接获取字符串值
+                body.as_str().unwrap().to_string()
+            } else if body.is_number() {
+                // 如果是数字，转换为字符串
+                body.to_string()
+            } else if body.is_boolean() {
+                // 如果是布尔值，转换为字符串
+                body.as_bool().unwrap().to_string()
+            } else if body.is_null() {
+                // 如果是null，返回"null"
+                "null".to_string()
+            } else {
+                // 对于对象和数组，使用serde_json序列化为字符串
+                match serde_json::to_string(&body) {
+                    Ok(json_str) => json_str,
+                    Err(_) => body.to_string(), // 如果序列化失败，使用默认的to_string
+                }
+            }
+        },
+        None => {
+            "null".to_string()
+        }
+    }
+    
+}
+
+
+#[op2]
+fn println(#[serde] body: Option<serde_json::Value>) -> Result<(), AnyError> {
+    let body_str = body_to_string(body);
+    emit_log("println", RunLog::log(body_str));
     Ok(())
 }
 
-#[op2(fast)]
-fn eprintln(#[string] str: String) -> Result<(), AnyError> {
-    emit_log("eprintln", RunLog::error(str));
+#[op2]
+fn eprintln(#[serde] body: Option<serde_json::Value>) -> Result<(), AnyError> {
+    let body_str = body_to_string(body);
+    emit_log("eprintln", RunLog::error(body_str));
     Ok(())
 }
 
@@ -116,6 +149,15 @@ extension!(
         fs_funs::op_fs_read_line,
         fs_funs::op_fs_append,
         fs_funs::op_fs_create_file,
+        http_funs::op_http_get,
+        http_funs::op_http_post,
+        http_funs::op_http_post_form,
+        http_funs::op_http_post_upload,
+        http_funs::op_http_put,
+        http_funs::op_http_delete,
+        http_funs::op_http_get_cookies,
+        http_funs::op_http_clear_cookies,
+        http_funs::op_http_set_cookie,
         op_tera_template,
         handlebars_render
     ],

@@ -6,9 +6,9 @@ import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
 import { BehaviorSubject, debounceTime, fromEvent, Subject, throttleTime } from "rxjs";
 import { MqType } from "../../enums/mq-type";
 import { MessageService } from "../../service/message.service";
-import { v4 as uuidv4 } from "uuid"
 import { RunLog } from '../../modal/run-log';
-const appWindow = getCurrentWebviewWindow()
+
+const appWindow = getCurrentWebviewWindow();
 
 @Component({
   selector: 'app-terminal',
@@ -24,9 +24,8 @@ export class TerminalComponent implements OnInit {
 
   @ViewChild("xtermView") xtermView!: ElementRef;
 
-
   @Output()
-  runClick: EventEmitter<String> = new EventEmitter();
+  runClick: EventEmitter<string> = new EventEmitter();
 
   @ViewChild("content") content!: ElementRef;
 
@@ -34,27 +33,21 @@ export class TerminalComponent implements OnInit {
 
   logSubject = new Subject<string>();
 
-  messageProduct = new Subject<RunLog[]>();
+  messageProduct = new BehaviorSubject<RunLog[]>([]);
   message: RunLog[] = [];
 
-  constructor(public messageSrv: MessageService, public changeDetectorRef: ChangeDetectorRef) {
-    this.messageProduct = new BehaviorSubject<RunLog[]>(new Array<RunLog>());
+  constructor(
+    private messageSrv: MessageService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.initializeEventListeners();
+    this.initializeResizeHandling();
+    this.initializeMessageService();
   }
 
-
-
-  async setAMsg(msg: RunLog) {
-    msg.msg.split(/[\n\r]/).forEach(x => {
-      this.message.push({
-        logType: msg.logType,
-        msg: x
-      });
-    });
-    this.messageProduct.next(this.message);
-  }
-
-
-  async ngOnInit(): Promise<void> {
+  private async initializeEventListeners(): Promise<void> {
     await appWindow.listen<RunLog>('println', (data) => {
       const res = data.payload;
       if (res.logType !== "result") {
@@ -62,23 +55,23 @@ export class TerminalComponent implements OnInit {
       }
       if (res.logType === "result" || res.logType === "error") {
         this.running = false;
-        // this.logSubject.next(uuidv4().toString())
-        // this.message = [...this.message];
         this.changeDetectorRef.detectChanges();
-        setTimeout(() => {
-          this.scrollViewport.scrollTo({ bottom: 0, behavior: "smooth" });
-        }, 10);
-
-        
+        this.scrollToBottom();
       }
     });
+  }
 
-    fromEvent(window, "resize").pipe(throttleTime(1000), debounceTime(1000)).subscribe(() => {
-      setTimeout(() => {
-        this.scrollViewport.checkViewportSize();
-      }, 10);
-    })
+  private initializeResizeHandling(): void {
+    fromEvent(window, "resize")
+      .pipe(throttleTime(1000), debounceTime(1000))
+      .subscribe(() => {
+        setTimeout(() => {
+          this.scrollViewport.checkViewportSize();
+        }, 10);
+      });
+  }
 
+  private initializeMessageService(): void {
     this.messageSrv.onMessage(message => {
       if (message.type === MqType.SPLIT) {
         setTimeout(() => {
@@ -86,42 +79,75 @@ export class TerminalComponent implements OnInit {
         }, 10);
       }
     });
-    // this.logSubject.subscribe(x=>{
-    //   this.message = [...this.message];
-    //   setTimeout(()=>{
-    //     this.scrollViewport.scrollTo({bottom: 0, behavior: "smooth"});
-    //   },10);
-    // })
   }
 
-  xtermViewClick($event: MouseEvent) {
+  private setAMsg(msg: RunLog): void {
+    const lines = msg.msg.split(/[\n\r]/);
+    lines.forEach(line => {
+      if (line.trim()) {
+        this.message.push({
+          logType: msg.logType,
+          msg: line
+        });
+      }
+    });
+    this.messageProduct.next([...this.message]);
   }
 
-
-  xtermChange($event: Event) {
-    $event.preventDefault();
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      this.scrollViewport.scrollTo({ bottom: 0, behavior: "smooth" });
+    }, 10);
   }
 
-  async play($event: MouseEvent) {
+  async play($event: MouseEvent): Promise<void> {
+    $event.stopPropagation();
     await this.clear($event);
     this.running = true;
     this.runClick.emit("run");
   }
 
-  async clear($event: MouseEvent) {
+  async clear($event: MouseEvent): Promise<void> {
+    $event.stopPropagation();
     this.message = [];
     this.messageProduct.next([]);
   }
 
-
-  async copyClick($event: MouseEvent) {
+  async copyClick($event: MouseEvent): Promise<void> {
+    $event.stopPropagation();
+    if (this.message.length === 0) {
+      await message("没有可复制的内容", { title: "", kind: "warning" });
+      return;
+    }
     const copyText = this.message.map(x => x.msg).join("\n");
-    await writeText(copyText);
-    await message("复制成功", { title: "", kind: "info" });
+    try {
+      await writeText(copyText);
+      await message("复制成功", { title: "", kind: "info" });
+    } catch (error) {
+      console.error("复制失败:", error);
+      await message("复制失败", { title: "", kind: "error" });
+    }
   }
 
-  scrollViewportChange($event: Event) {
+  xtermViewClick($event: MouseEvent): void {
+    $event.stopPropagation();
+  }
 
+  xtermChange($event: Event): void {
+    $event.preventDefault();
+  }
 
+  scrollViewportChange($event: Event): void {
+    $event.stopPropagation();
+  }
+
+  trackByIndex(index: number, item: RunLog): number {
+    return index;
+  }
+
+  getLineNumberWidth(): string {
+    const lineCount = this.message.length;
+    const digitCount = lineCount.toString().length;
+    return `${Math.max(40, digitCount * 8)}px`;
   }
 }

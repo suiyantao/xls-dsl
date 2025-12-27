@@ -78,7 +78,7 @@ export class MonacoEditorComponent implements OnInit, AfterViewInit {
     const resourcePath = await resolveResource('data/extraLib.js')
     const extraLib = await readTextFile(resourcePath)
     
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(extraLib);
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(extraLib, 'file:///extraLib.js');
     monaco.languages.registerCompletionItemProvider('javascript', {
       triggerCharacters: ['.'],
       provideCompletionItems: function (model: any, position: any, context: any, token: any) {

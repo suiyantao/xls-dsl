@@ -24,11 +24,11 @@
   }
 
   globalThis.console = {
-    log: (...args) => {
-      core.ops.println(`${args.toString()}`);
+    log: (args) => {
+      core.ops.println(args);
     },
-    error: (...args) => {
-      core.ops.eprintln(`${args.toString()}`);
+    error: (args) => {
+      core.ops.eprintln(args);
     },
   };
 
@@ -89,4 +89,34 @@
     }
 
   };
+
+  globalThis.http={
+    get: async (url, headers) => {
+      return core.ops.op_http_get(url, headers);
+    },
+    post: async (url, headers, body) => {
+      return core.ops.op_http_post(url, headers, body);
+    },
+    postForm: async (url, headers, formData) => {
+      return core.ops.op_http_post_form(url, headers, formData);
+    },
+    put: async (url, headers, body) => {
+      return core.ops.op_http_put(url, headers, body);
+    },
+    upload: async (url, headers, formFields, files, customHeaders) => {
+      return core.ops.op_http_post_upload(url, headers, formFields, files, customHeaders);
+    },
+    delete: async (url, headers) => {
+      return core.ops.op_http_delete(url, headers);
+    },
+    getCookies: async () => {
+      return core.ops.op_http_get_cookies();
+    },
+    clearCookies: async () => {
+      return core.ops.op_http_clear_cookies();
+    },
+    setCookie: async (name, value, domain, path, expires, secure, httpOnly) => {
+      return core.ops.op_http_set_cookie(name, value, domain, path, expires, secure, httpOnly);
+    },
+  }
 })(globalThis);

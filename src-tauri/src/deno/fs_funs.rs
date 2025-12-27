@@ -38,8 +38,8 @@ pub fn op_fs_create_dir_all(#[string] path: String) -> Result<(), AnyError> {
 /// # 参数
 /// - `path`: 要检查的文件或目录的路径，以字符串形式表示。
 #[op2(fast)]
-pub fn op_fs_exists(#[string] path: String) -> Result<bool, AnyError> {
-    Ok(fs::metadata(path).is_ok())
+pub fn op_fs_exists(#[string] path: String) -> bool {
+    fs::metadata(path).is_ok()
 }
 
 // 创建硬链接，将源文件链接到目标路径
@@ -96,16 +96,22 @@ pub fn op_fs_read_dir(#[string] path: String) -> Result<Vec<String>, AnyError> {
 /// # 参数
 /// - `path`: 要判断的路径，以字符串形式表示。
 #[op2(fast)]
-pub fn op_fs_is_dir(#[string] path: String) -> Result<bool, AnyError> {
-    Ok(fs::metadata(path)?.is_dir())
+pub fn op_fs_is_dir(#[string] path: String) -> bool {
+    match fs::metadata(path) {
+        Ok(m) => m.is_dir(),
+        Err(_) => false,
+    }
 }
 
 // 判断是否是文件
 /// # 参数
 /// - `path`: 要判断的路径，以字符串形式表示。
 #[op2(fast)]
-pub fn op_fs_is_file(#[string] path: String) -> Result<bool, AnyError> {
-    Ok(fs::metadata(path)?.is_file())
+pub fn op_fs_is_file(#[string] path: String) -> bool {
+    match fs::metadata(path) {
+        Ok(m) => m.is_file(),
+        Err(_) => false,
+    }
 }
 
 // 删除单个目录，目录必须为空

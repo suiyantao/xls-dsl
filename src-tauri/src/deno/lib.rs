@@ -81,3 +81,20 @@ impl DenoRuntime {
         Ok(())
     }
 }
+
+#[tokio::test]
+async fn test_deno_runtime() {
+    let file = XlsFile {
+        id: 1,
+        name: "test".to_string(),
+        xlx_template: "test.xlsx".to_string(),
+        code: r#"
+const res = await http.get("http://www.baidu.com")
+console.log(res);"#.to_string(),
+        created_date: None,
+        updated_date: None,
+    };
+
+    let deno_runtime = DenoRuntime::new(file);
+    deno_runtime.run_script().await.unwrap();
+}

@@ -215,5 +215,111 @@ function md5(content) {
 function print_ln(content) {
 }
 
+const http = {
+    /**
+     * 发送HTTP GET请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式，可省略。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    get: async function (url, headers) {
+        return Deno.core.opAsync('op_http_get', [url, headers]);
+    },
+
+    /**
+     * 发送HTTP POST请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式。
+     * @param {Object=} data 可选的POST数据，键值对形式。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    post: function (url, headers, data) {
+        return Deno.core.opAsync('op_http_post', [url, headers, data]);
+    },
+
+    /**
+     * 发送HTTP POST表单请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式。
+     * @param {Object=} data 可选的POST表单数据，键值对形式。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    postForm: function (url, headers, data) {
+        return Deno.core.opAsync('op_http_post_form', [url, headers, data]);
+    },
+
+    /**
+     * 发送HTTP POST上传文件请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式。
+     * @param {Object=} data 可选的POST上传文件数据，键值对形式。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    postUpload: function (url, headers, data) {
+        return Deno.core.opAsync('op_http_post_upload', [url, headers, data]);
+    },
+
+    /**
+     * 发送HTTP PUT请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式。
+     * @param {Object=} data 可选的PUT数据，键值对形式。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    put: function (url, headers, data) {
+        return Deno.core.opAsync('op_http_put', [url, headers, data]);
+    },
+
+    /**
+     * 发送HTTP DELETE请求。
+     * 
+     * @param {string} url 请求的URL。
+     * @param {Object=} headers 可选的请求头，键值对形式。
+     * @return {Promise<Response>} 返回一个Promise对象，解析为Response对象。
+     */
+    delete: function (url, headers) {
+        return Deno.core.opAsync('op_http_delete', [url, headers]);
+    },
+
+    /**
+     * 获取当前HTTP请求的所有cookies。
+     * 
+     * @return {Promise<Array<Cookie>>} 返回一个Promise对象，解析为Cookie数组。
+     */
+    getCookies: function () {
+        return Deno.core.opAsync('op_http_get_cookies', []);
+    },
+
+    /**
+     * 清除当前HTTP请求的所有cookies。
+     * 
+     * @return {Promise<void>} 返回一个Promise对象，代表异步操作的完成。
+     */
+    clearCookies: function () {
+        return Deno.core.opAsync('op_http_clear_cookies', []);
+    },
+
+    /**
+     * 设置当前HTTP请求的cookie。
+     * 
+     * @param {string} name cookie的名称。
+     * @param {string} value cookie的值。
+     * @param {string} domain cookie的域名。
+     * @param {string} path cookie的路径。
+     * @param {Date=} expires 可选的过期时间，Date对象。
+     * @param {boolean=} secure 是否仅通过HTTPS传输。
+     * @param {boolean=} httpOnly 是否仅通过HTTP(S)访问。
+     * @return {Promise<void>} 返回一个Promise对象，代表异步操作的完成。
+     */
+    setCookie: function (name, value, domain, path, expires, secure, httpOnly) {
+        return Deno.core.opAsync('op_http_set_cookie', [name, value, domain, path, expires, secure, httpOnly]);
+    }
+}
+
 
 
