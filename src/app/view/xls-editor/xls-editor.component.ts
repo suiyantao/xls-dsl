@@ -18,6 +18,7 @@ import {TerminalComponent} from "../../plugin/terminal/terminal.component";
 import { Menu, MenuItem } from '@tauri-apps/api/menu';
 import { MonacoEditorComponent } from '../../plugin/monaco-editor/monaco-editor.component';
 import { DialogComponent } from '../../plugin/dialog/dialog.component';
+import { DialogService } from '../../plugin/dialog/dialog.service';
 import { FileInfo } from '../../modal/file-info';
 import { MessageService } from '../../service/message.service';
 import { MqType } from '../../enums/mq-type';
@@ -51,6 +52,10 @@ import { MqType } from '../../enums/mq-type';
 })
 export class XlsEditorComponent implements AfterViewInit, OnInit {
 
+    constructor(
+        private messageService: MessageService,
+        private dialogService: DialogService
+    ) {}
 
     @ViewChild("splitEl") splitEl!: SplitComponent;
     @ViewChild("splitPEl") splitPEl!: SplitComponent;
@@ -62,26 +67,24 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     @ViewChildren("fileItem") fileItem!: QueryList<ElementRef>
     @ViewChildren("fileItem") terminalComponent!: TerminalComponent
 
-    menuShow: boolean = false;
-
     menu = Menu.new({
         items: [
             {
                 text: '新建',
                 action: () => {
-                    this.addFile(new MouseEvent('click'));
+                    this.addFile();
                 }
             },
             {
                 text: '修改',
                 action: () => {
-                    this.editFile(new MouseEvent('click'));
+                    this.editFile();
                 }
             },
             {
                 text: '删除',
                 action: () => {
-                    this.delFile(new MouseEvent('click'));
+                    this.delFile();
                 }
             }
         ]
@@ -146,33 +149,74 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
 
     }
 
-    addFile($event: MouseEvent) {
+    addFile() {
         this.fileDialog.show();
         this.fileForm.reset();
         this.fileDialog.setTitle('新增');
     }
 
-    editFile($event: MouseEvent) {
+    editFile() {
         const selectedFile = this.fileList.filter(x=>x.selected)[0];
         this.fileForm.patchValue(selectedFile as any);
         this.fileDialog.show();
         this.fileDialog.setTitle('修改');
     }
 
-    async delFile($event: MouseEvent) {
-        const yes: boolean = await ask('你确定删除?', {title: '系统提示', kind: 'warning'});
-        if (yes) {
-            const selectedFile = this.fileList.filter(x=>x.selected)[0];
-            const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
-            const index = this.fileList.indexOf(selectedFile, 0);
-            if (index > -1) {
-                this.fileList.splice(index, 1);
+    async delFile() {
+        // 使用动态确认对话框
+        const selectedFile = this.fileList.filter(x=>x.selected)[0];
+        if (!selectedFile) {
+            await this.dialogService.alert('请先选择一个文件', '提示');
+            return;
+        }
+        
+        const confirmed = await this.dialogService.confirm(
+            `确定要删除文件 "${selectedFile.name}" 吗？此操作无法撤销。`,
+            '删除确认'
+        );
+        
+        if (confirmed) {
+            try {
+                const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
+                const index = this.fileList.indexOf(selectedFile, 0);
+                if (index > -1) {
+                    this.fileList.splice(index, 1);
+                }
+                
+                // 显示成功消息
+                await this.dialogService.alert('文件删除成功！', '成功');
+            } catch (error) {
+                // 显示错误消息
+                await this.dialogService.alert(`删除失败: ${error}`, '错误');
             }
         }
     }
 
-    async saveClick($event: MouseEvent) {
+    @HostListener('document:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if (event.key === 'Enter') {
+             this.saveClick();
+        }
+    }
+
+    async saveClick() {
         const fileForm = this.fileForm.value
+        if(!fileForm.name){
+             open({
+                title: '系统提示',
+                kind: 'warning',
+                content: '请输入文件名'
+             })
+            return;
+        }
+        if(!fileForm.xlxTemplate){
+             open({
+                title: '系统提示',
+                kind: 'warning',
+                content: '请选择文件'
+             })
+            return;
+        }
         if(fileForm.id){
             let add_form = {
                 id : fileForm.id,
@@ -201,20 +245,6 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
         this.fileDialog.close();
     }
 
-    async selectFileClick($event: MouseEvent) {
-        const selected = await open({
-            multiple: false,
-            filters: [{
-                name: 'xlsx',
-                extensions: ['xlsx']
-            }]
-        });
-        if (selected) {
-            this.fileForm.patchValue({
-                xlxTemplate: selected as string
-            })
-        }
-    }
 
     fileClick($event: MouseEvent, filInfo: FileInfo) {
         filInfo.selected = true;
@@ -224,7 +254,6 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
                 x.selected = false;
             }
         })
-        //this.monacoEditor.setVal(filInfo.code as string);
     }
 
     async fileContextmenu(event: MouseEvent, filInfo: FileInfo) {
@@ -237,17 +266,8 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
         event.preventDefault();
         let menu =  await this.menu;
         menu.popup()
-
-        // this.menuShow = true;
-        // const menu = this.fileContentMenu.nativeElement as HTMLElement;
-        // menu.style.left = event.pageX + 'px';
-        // menu.style.top = event.pageY + 'px';
     }
 
-    @HostListener('document:click', ['$event'])
-    clickout() {
-        this.menuShow = false;
-    }
 
     async runClick($event: String) {
        let fileInfo = this.fileList.find(x=>x.selected);

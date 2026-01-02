@@ -1,0 +1,4 @@
+<div class="form__field">
+    <input class="form__input" [id]="id" type="text" [value]="innerValue" (input)="onInput(getValue($event))" (blur)="onTouched()" placeholder=" ">
+    <label for="{{id}}" class="form__label">{{label}}</label>   
+</div>  

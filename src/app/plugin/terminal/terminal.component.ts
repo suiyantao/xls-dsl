@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { message } from '@tauri-apps/plugin-dialog';
 import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
@@ -8,7 +8,12 @@ import { MqType } from "../../enums/mq-type";
 import { MessageService } from "../../service/message.service";
 import { RunLog } from '../../modal/run-log';
 
-const appWindow = getCurrentWebviewWindow();
+let appWindow: WebviewWindow;
+try {
+ appWindow = getCurrentWebviewWindow();
+}catch(e){
+  console.log(e);
+}
 
 @Component({
   selector: 'app-terminal',

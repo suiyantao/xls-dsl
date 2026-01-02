@@ -7,3 +7,19 @@ html,body{
   margin: 0;
   padding: 0;
 }
+
+:root{
+  --app-text-color: #374151;        /* 文本颜色 */
+  --app-text-color-dark: #E5E7EB;     /* 暗色文本 */
+  --app-primary-color: #C2410C;       /* 主色调 */
+  --app-bg-color: #F9FAFB;            /* 背景色 */
+  --app-bg-color-dark: #1E1E1E;       /* 暗色背景 */
+  --app-border-color: #D1D5DB;        /* 边框色 */
+  --app-border-color-dark: #4B5563;   /* 暗色边框 ✅ */
+  --app-button-bg: #C2410C;        /* 按钮颜色 */
+  --app-button-bg-dark: #9D370A;   /* 暗色按钮 */
+  --app-button-text-color: #F9FAFB;   /* 按钮文本颜色 */
+  --app-button-text-color-dark: #F3F4F6; /* 暗色按钮文本 */
+  --app-button-read-only-bg: #D1D5DB; /* 只读按钮背景 */
+  --app-button-read-only-text-color: #9CA3AF; /* 只读按钮文本 */
+}

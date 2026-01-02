@@ -1,17 +1,12 @@
-.custome-input{
-    @apply  w-full  p-1.5 outline-none text-gray-900  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-orange-700 text-sm dark:bg-[rgb(30,30,30)] dark:text-[rgb(189,189,189)] 
- }
+/* XLS编辑器样式 - 优化版本 */
+.custome-input {
+  @apply w-full p-1.5 outline-none text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-orange-700 text-sm dark:bg-[rgb(30,30,30)] dark:text-[rgb(189,189,189)];
+}
 
- .file-selected{
-    @apply bg-[rgb(224,226,239)] dark:bg-[rgb(48,48,53)]
- }
+.file-selected {
+  @apply bg-[rgb(224,226,239)] dark:bg-[rgb(48,48,53)];
+}
 
- .contentMenu{
-    @apply fixed w-[100px] left-0 top-0 bg-white text-black  dark:bg-[rgb(60,60,60)] dark:text-[rgb(240,242,245)] text-[13px] py-2   z-20 rounded-sm  
-    shadow-lg shadow-gray-600 dark:shadow-black border-[1px] border-solid border-[rgb(220,220,220)] dark:border-gray-600
- }
-
-
-
-
- 
+.contentMenu {
+  @apply fixed w-[100px] left-0 top-0 bg-white text-black dark:bg-[rgb(60,60,60)] dark:text-[rgb(240,242,245)] text-[13px] py-2 z-20 rounded-sm shadow-lg border border-solid border-[rgb(220,220,220)] dark:border-gray-600;
+}

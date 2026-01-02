@@ -1,0 +1,27 @@
+.form__input {
+    @apply w-full px-2 py-1.5 bg-transparent border-[1px] outline-none  dark:placeholder:text-gray-400 placeholder:text-gray-400 dark:text-[var(--app-text-color-dark)]  text-[var(--app-text-color)] rounded-md border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] text-sm;
+}
+
+.form__input:focus {
+    @apply border-[var(--app-primary-color)];
+}
+
+.form__input:hover {
+    @apply border-[var(--app-primary-color)];
+}
+
+.form__label {
+    @apply block text-sm cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute top-[0.5em] left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] px-1 transition-transform ease-in transform-gpu;
+}
+
+
+.form__field {
+    @apply relative w-full;
+}
+
+.form__input:focus ~ .form__label,
+.form__input:not(:placeholder-shown) ~ .form__label { 
+    @apply transform translate-y-[-1.2em];
+}
+
+

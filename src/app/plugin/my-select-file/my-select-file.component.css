@@ -1,0 +1,30 @@
+.form__field {
+    @apply relative w-full flex;
+}
+
+.form__input {
+    @apply w-full px-2 py-1.5 bg-transparent border-[1px] outline-none dark:placeholder:text-gray-400 placeholder:text-gray-400 dark:text-[var(--app-text-color-dark)]  text-[var(--app-text-color)] rounded-l-md border-r-0 border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] flex-1 text-sm read-only:cursor-not-allowed;
+}
+
+.form__input:focus {
+    @apply border-[var(--app-primary-color)];
+}
+
+.form__input:hover {
+    @apply border-[var(--app-primary-color)];
+}
+
+.form__label {
+    @apply block cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute  left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] top-[-0.8em] text-sm px-1;
+    transition: top 0.2s ease-in, font-size 0.2s ease-in;
+}
+
+.form__button {
+    @apply  bg-[var(--app-primary-color)] text-white rounded-r-md border-[1px] border-[var(--app-primary-color)] text-[12px] px-4;
+}
+
+
+
+
+
+

@@ -44,10 +44,18 @@ export class DialogComponent{
 
   
   @Input({required:true}) title!: string;
+  @Input() content?: string;
+  @Input() type: 'default' | 'confirm' | 'alert' = 'default';
 
   @ViewChild("dialog") dialog!: ElementRef;
 
-  protected visble: boolean = false;
+  visble: boolean = false;
+  
+  // 动态内容支持
+  dialogData?: any;
+  onConfirm?: () => void;
+  onCancel?: () => void;
+  onOk?: () => void;
 
   public close(){
     this.visble = false;
@@ -59,6 +67,44 @@ export class DialogComponent{
 
   public setTitle(title:string){
     this.title = title;
+  }
+  
+  // 动态内容方法
+  public setContent(content: string): void {
+    this.content = content;
+  }
+  
+  public setData(data: any): void {
+    this.dialogData = data;
+  }
+  
+  public setType(type: 'default' | 'confirm' | 'alert'): void {
+    this.type = type;
+  }
+  
+  // 处理动态按钮点击
+  handleConfirm(): void {
+    if (this.onConfirm) {
+      this.onConfirm();
+    } else {
+      this.close();
+    }
+  }
+  
+  handleCancel(): void {
+    if (this.onCancel) {
+      this.onCancel();
+    } else {
+      this.close();
+    }
+  }
+  
+  handleOk(): void {
+    if (this.onOk) {
+      this.onOk();
+    } else {
+      this.close();
+    }
   }
 
   onBackdropClick() {

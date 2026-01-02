@@ -1,0 +1,5 @@
+<div class="form__field">
+    <input class="form__input" [readonly]="readonly" [id]="id" type="text" [value]="innerValue" (input)="onInput(getValue($event))" (blur)="onTouched()" placeholder=" ">
+    <button class="form__button" type="button" (click)="selectFileClick($event)">选择文件</button>
+    <label for="{{id}}" class="form__label">{{label}}</label>   
+</div>  

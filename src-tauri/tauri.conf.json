@@ -17,8 +17,8 @@
       "icons/icon.ico"
     ]
   },
-  "productName": "Xls Code",
-  "mainBinaryName": "Xls Code",
+  "productName": "Deno Code",
+  "mainBinaryName": "Deno Code",
   "version": "0.0.0",
   "identifier": "jasonsui",
   "plugins": {},

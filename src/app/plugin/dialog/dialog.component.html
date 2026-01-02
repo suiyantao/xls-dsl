@@ -1,23 +1,67 @@
-<div class="relative z-10"  [style.display]="visble?'block':'none'" aria-labelledby="modal-title"
-  role="dialog" aria-modal="true">
-  <div class="fixed inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40" [@backdropAnimation]="visble" (click)="onBackdropClick()"></div>
-  <div class="fixed inset-0 z-10 w-screen h-screen overflow-y-auto flex justify-center items-center dialog-overlay drop-shadow-lg">
-    <div #dialog style="width: min(90vw, 500px); max-width: 500px;" cdkDrag [@openClose]="visble"
-      class="bg-white dark:bg-[#1E1E1E] text-left fixed mx-4 sm:mx-0 sm:my-8 rounded-xl overflow-hidden">
-      <div cdkDragHandle
-        class="cursor-move text-sm px-3 py-3 border-b border-solid border-gray-200 dark:border-gray-700 flex items-center justify-between dialog-header-gradient">
-        <label class="text-gray-700 dark:text-gray-200 font-medium select-none text-sm tracking-wide">{{title}}</label>
-        <div class='codicon codicon-close close-button-optimized dark:text-gray-300 text-black cursor-default'
-        [style.font-size]="25" (click)="close()"></div>
-      </div>
-      <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-        <div class="">
-          <ng-content select=".dialog-body"></ng-content>
+<div class="relative z-10" [style.display]="visble?'block':'none'" aria-labelledby="modal-title" role="dialog"
+  aria-modal="true">
+  <div class="fixed inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40" [@backdropAnimation]="visble"
+    (click)="onBackdropClick()"></div>
+  <div
+    class="fixed inset-0 z-10 w-screen h-screen overflow-y-auto flex justify-center items-center  dialog-overlay">
+    <div #dialog  cdkDrag [@openClose]="visble"
+      class="text-left fixed overflow-hidden">
+      <div style="width: min(90vw, 500px); max-width: 500px;" class="dialog p-[3px] bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)]  drop-shadow-lg">
+        <div cdkDragHandle
+          class="cursor-move text-sm px-3 py-3 border-b border-solid border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] flex items-center justify-between dialog-header-gradient">
+          <label
+            class="text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] font-medium select-none text-sm tracking-wide">{{title}}</label>
+          <div class='codicon codicon-close close-button-optimized dark:text-[var(--app-text-color-dark)] text-[var(--app-text-color)]  hover:text-red-500 cursor-pointer'
+            [style.font-size]="25" (click)="close()"></div>
         </div>
-      </div>
-      <div
-        class="py-3 sm:flex justify-end px-6 border-t border-solid border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#2A2A2A]/50">
-        <ng-content select=".dialog-bottons"></ng-content>
+        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4 bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)]">
+          <div class="">
+            <!-- 动态内容区域 -->
+            <div *ngIf="content" class="text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] mb-4">
+              {{ content }}
+            </div>
+            
+            <!-- 动态组件内容 -->
+            <div *ngIf="dialogData?.component" class="mb-4">
+              <!-- 这里可以插入动态组件 -->
+            </div>
+            
+            <!-- 默认插槽内容 -->
+            <ng-content select=".dialog-body"></ng-content>
+          </div>
+        </div>
+        
+        <!-- 动态按钮区域 -->
+        <div *ngIf="type === 'confirm'" 
+             class="py-3 sm:flex justify-end px-6 border-t border-solid border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)]">
+          <div class="flex space-x-3">
+            <button 
+              (click)="handleCancel()" 
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              取消
+            </button>
+            <button 
+              (click)="handleConfirm()" 
+              class="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+              确认
+            </button>
+          </div>
+        </div>
+        
+        <div *ngIf="type === 'alert'" 
+             class="py-3 sm:flex justify-end px-6 border-t border-solid border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)]">
+          <button 
+            (click)="handleOk()" 
+            class="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+            确定
+          </button>
+        </div>
+        
+        <!-- 默认插槽按钮 -->
+        <div *ngIf="type === 'default'" 
+             class="py-3 sm:flex justify-end px-6 border-t border-solid border-[var(--app-border-color)] dark:border-[var(--app-border-color-dark)] bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)]">
+          <ng-content select=".dialog-bottons"></ng-content>
+        </div>
       </div>
     </div>
   </div>

@@ -21,6 +21,9 @@ import { EditorComponent } from "./plugin/editor/editor.component";
 import { NGX_MONACO_EDITOR_CONFIG } from "./plugin/editor/config";
 import { CommonModule } from "@angular/common";
 import { MonacoEditorComponent } from "./plugin/monaco-editor/monaco-editor.component";
+import { MyInputComponent } from "./plugin/my-input/my-input.component";
+import { MySelectFileComponent } from "./plugin/my-select-file/my-select-file.component";
+import { DialogService } from "./plugin/dialog/dialog.service";
 
 @NgModule({
   declarations: [
@@ -32,11 +35,13 @@ import { MonacoEditorComponent } from "./plugin/monaco-editor/monaco-editor.comp
     DialogComponent,
     HeaderComponent,
     EditorComponent,
-    MonacoEditorComponent
+    MonacoEditorComponent,
+    MyInputComponent,
+    MySelectFileComponent,
   ],
   imports: [BrowserModule,CommonModule, FormsModule, InputNoSpaceDirective, FormsModule, AngularSplitModule, BrowserAnimationsModule, FontAwesomeModule, DragDropModule, ReactiveFormsModule, CdkContextMenuTrigger, CdkMenu, CdkMenuItem, OverlayModule, ScrollingModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
-  providers: [MessageService,   { provide: NGX_MONACO_EDITOR_CONFIG, useValue: {} }],
+  providers: [MessageService, DialogService,   { provide: NGX_MONACO_EDITOR_CONFIG, useValue: {} }],
   bootstrap: [AppComponent],
 })
 export class AppModule { }

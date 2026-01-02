@@ -25,12 +25,6 @@ pub struct HttpHeaders {
 }
 
 impl HttpHeaders {
-    /// 创建新的HTTP头
-    pub fn new() -> Self {
-        Self {
-            headers: HashMap::new(),
-        }
-    }
     
     /// 转换为reqwest头格式
     pub fn to_reqwest_headers(&self) -> reqwest::header::HeaderMap {
