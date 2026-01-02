@@ -1,14 +1,14 @@
 <div class="relative z-10"  [style.display]="visble?'block':'none'" aria-labelledby="modal-title"
   role="dialog" aria-modal="true">
   <div class="fixed inset-0 backdrop-blur-sm bg-black/20 dark:bg-black/40" [@backdropAnimation]="visble" (click)="onBackdropClick()"></div>
-  <div class="fixed inset-0 z-10 w-screen h-screen overflow-y-auto flex justify-center items-center dialog-overlay">
+  <div class="fixed inset-0 z-10 w-screen h-screen overflow-y-auto flex justify-center items-center dialog-overlay drop-shadow-lg">
     <div #dialog style="width: min(90vw, 500px); max-width: 500px;" cdkDrag [@openClose]="visble"
-      class="bg-white text-left fixed mx-4 sm:mx-0 sm:my-8 dark:bg-[rgb(30,30,30)] rounded-lg shadow-2xl shadow-gray-900/20 dark:shadow-black/40 border border-solid border-white/10 dark:border-white/5 backdrop-blur-sm">
+      class="bg-white dark:bg-[#1E1E1E] text-left fixed mx-4 sm:mx-0 sm:my-8 rounded-xl overflow-hidden">
       <div cdkDragHandle
-        class=" cursor-move text-sm px-2 py-2 border-b-[1px] border-solid border-[rgb(220,220,220)] dark:border-[rgb(43,43,43)] flex items-center justify-between">
-        <label class=" dark:text-[rgb(189,189,189)] select-none">{{title}}</label>
-        <div class='codicon codicon-close  dark:text-[rgb(189,189,189)]    text-black cursor-default'
-        [style.font-size]="16" (click)="close()"></div>
+        class="cursor-move text-sm px-3 py-3 border-b border-solid border-gray-200 dark:border-gray-700 flex items-center justify-between dialog-header-gradient">
+        <label class="text-gray-700 dark:text-gray-200 font-medium select-none text-sm tracking-wide">{{title}}</label>
+        <div class='codicon codicon-close close-button-optimized dark:text-gray-300 text-black cursor-default'
+        [style.font-size]="25" (click)="close()"></div>
       </div>
       <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
         <div class="">
@@ -16,7 +16,7 @@
         </div>
       </div>
       <div
-        class="py-2 sm:flex justify-end px-6  border-t-[1px] border-solid border-[rgb(220,220,220)] dark:border-[rgb(43,43,43)]">
+        class="py-3 sm:flex justify-end px-6 border-t border-solid border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#2A2A2A]/50">
         <ng-content select=".dialog-bottons"></ng-content>
       </div>
     </div>

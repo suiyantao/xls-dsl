@@ -4,7 +4,7 @@ import {Component, ElementRef, HostListener, Input, ViewChild} from '@angular/co
 @Component({
     selector: 'app-dialog',
     templateUrl: './dialog.component.html',
-    styleUrl: './dialog.component.css',
+    styleUrls: ['./dialog.component.css'],
     animations: [
         trigger('openClose', [
             state('true', style({
