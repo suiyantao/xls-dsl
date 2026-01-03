@@ -11,7 +11,7 @@
 }
 
 .form__label {
-    @apply block text-sm cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute top-[0.5em] left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] px-1 transition-transform ease-in transform-gpu;
+    @apply block text-sm cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute top-[0.5em] left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] px-1 transition-[transform,font-size] ease-in transform-gpu;
 }
 
 
@@ -21,7 +21,7 @@
 
 .form__input:focus ~ .form__label,
 .form__input:not(:placeholder-shown) ~ .form__label { 
-    @apply transform translate-y-[-1.2em];
+    @apply transform translate-y-[-1.3em] text-[12px];
 }
 
 

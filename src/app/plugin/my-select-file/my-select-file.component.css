@@ -15,7 +15,7 @@
 }
 
 .form__label {
-    @apply block cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute  left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] top-[-0.8em] text-sm px-1;
+    @apply block cursor-text font-medium text-[var(--app-text-color)] dark:text-[var(--app-text-color-dark)] absolute  left-[0.6em] select-none bg-[var(--app-bg-color)] dark:bg-[var(--app-bg-color-dark)] top-[-0.8em] text-[12px] px-1;
     transition: top 0.2s ease-in, font-size 0.2s ease-in;
 }
 

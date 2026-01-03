@@ -18,7 +18,6 @@ import {TerminalComponent} from "../../plugin/terminal/terminal.component";
 import { Menu, MenuItem } from '@tauri-apps/api/menu';
 import { MonacoEditorComponent } from '../../plugin/monaco-editor/monaco-editor.component';
 import { DialogComponent } from '../../plugin/dialog/dialog.component';
-import { DialogService } from '../../plugin/dialog/dialog.service';
 import { FileInfo } from '../../modal/file-info';
 import { MessageService } from '../../service/message.service';
 import { MqType } from '../../enums/mq-type';
@@ -52,10 +51,6 @@ import { MqType } from '../../enums/mq-type';
 })
 export class XlsEditorComponent implements AfterViewInit, OnInit {
 
-    constructor(
-        private messageService: MessageService,
-        private dialogService: DialogService
-    ) {}
 
     @ViewChild("splitEl") splitEl!: SplitComponent;
     @ViewChild("splitPEl") splitPEl!: SplitComponent;
@@ -163,31 +158,13 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     }
 
     async delFile() {
-        // 使用动态确认对话框
-        const selectedFile = this.fileList.filter(x=>x.selected)[0];
-        if (!selectedFile) {
-            await this.dialogService.alert('请先选择一个文件', '提示');
-            return;
-        }
-        
-        const confirmed = await this.dialogService.confirm(
-            `确定要删除文件 "${selectedFile.name}" 吗？此操作无法撤销。`,
-            '删除确认'
-        );
-        
-        if (confirmed) {
-            try {
-                const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
-                const index = this.fileList.indexOf(selectedFile, 0);
-                if (index > -1) {
-                    this.fileList.splice(index, 1);
-                }
-                
-                // 显示成功消息
-                await this.dialogService.alert('文件删除成功！', '成功');
-            } catch (error) {
-                // 显示错误消息
-                await this.dialogService.alert(`删除失败: ${error}`, '错误');
+        const yes: boolean = await ask('你确定删除?', {title: '系统提示', kind: 'warning'});
+        if (yes) {
+            const selectedFile = this.fileList.filter(x=>x.selected)[0];
+            const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
+            const index = this.fileList.indexOf(selectedFile, 0);
+            if (index > -1) {
+                this.fileList.splice(index, 1);
             }
         }
     }
