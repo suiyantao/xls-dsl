@@ -21,7 +21,7 @@
 - **Tauri 2.0** - 轻量级、安全的桌面应用框架
 - **Angular 19** - 响应式、组件化的前端架构
 - **Monaco Editor** - VS Code 级别的代码编辑体验
-- **AI 集成** - Ollama 支持，提供代码智能功能
+- **多主题支持** - 亮色/暗色主题切换
 
 ## 🌟 主要特性
 
@@ -58,12 +58,6 @@ const snowflakeId = snowid();
 - **终端模拟** - 内置终端，支持多标签
 - **对话框系统** - 动态创建各种对话框
 - **主题切换** - 亮色/暗色主题支持
-
-### 🤖 AI 智能功能
-- **代码补全** - 基于 Ollama 的智能代码补全
-- **代码解释** - 自动解释代码逻辑
-- **代码优化** - 提供代码优化建议
-- **测试生成** - 自动生成测试代码
 
 ## 🏗️ 技术架构
 
@@ -199,16 +193,29 @@ console.log('GitHub API response:', JSON.parse(response).name);
    - 支持多标签页
    - 可自定义主题和字体
 
-### AI 功能使用
+### Excel DSL 处理
 
-1. **启用 AI 功能**
-   - 确保本地安装 Ollama: `curl -fsSL https://ollama.ai/install.sh | sh`
-   - 拉取 CodeLlama 模型: `ollama pull codellama:7b`
+1. **加载 Excel 模板**
+   ```javascript
+   const template = await fs.read_xls('./template.xlsx');
+   console.log('Excel data:', template);
+   ```
 
-2. **使用 AI 工具**
-   - 点击编辑器右上角 AI 工具栏
-   - 选择需要的 AI 功能（补全、解释、优化、测试）
-   - 查看 AI 输出结果并应用到代码
+2. **数据处理**
+   ```javascript
+   // 处理 Excel 数据
+   const processedData = template.map(row => ({
+     ...row,
+     calculated: row.value * 2
+   }));
+   ```
+
+3. **生成报告**
+   ```javascript
+   // 使用模板引擎生成报告
+   const report = await Handlebars.render(templateString, processedData);
+   await fs.write('./report.html', report);
+   ```
 
 ## 🔧 扩展开发
 
@@ -361,7 +368,7 @@ src-tauri/
 - [Tauri](https://tauri.app/) - 构建轻量级桌面应用
 - [Angular](https://angular.io/) - 现代前端框架
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/) - 代码编辑器
-- [Ollama](https://ollama.ai/) - 本地 AI 模型运行
+- [Calamine](https://github.com/tafia/calamine) - Excel 文件解析
 
 ## 🔗 相关资源
 
