@@ -1,23 +1,17 @@
-/** @type {import('tailwindcss').Config} */
-
-const colors = require('tailwindcss/colors')
-
+const colors = require("tailwindcss/colors");
 
 module.exports = {
-  content: [
-    "./src/**/*.{html,ts}",
-  ],
+  content: ["./src/**/*.{html,ts}"],
   theme: {
     extend: {
       keyframes: {
         blinker: {
-          '50%': {
-            opacity: 0
-          }
-        }
-      }
+          "50%": {
+            opacity: 0,
+          },
+        },
+      },
     },
   },
   plugins: [],
-}
-
+};

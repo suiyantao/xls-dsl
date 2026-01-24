@@ -215,6 +215,89 @@ function md5(content) {
 function print_ln(content) {
 }
 
+export class HttpClient {
+    constructor(url) {
+    }
+    /**
+     * 设置HTTP请求方法。
+     * 
+     * @param {HttpMethod} method HTTP请求方法，如GET、POST等。
+     * @return {HttpClient} 返回当前HttpClient实例，用于链式调用。
+     */
+    method(method) {
+        return this;
+    }
+
+    /**
+     * 设置HTTP请求头。
+     * 
+     * @param {string} key 请求头的键。
+     * @param {*} value 请求头的值。
+     * @return {HttpClient} 返回当前HttpClient实例，用于链式调用。
+     */
+    header(key, value) {
+        return this;
+    }
+
+    /**
+     * 设置HTTP请求头。
+     * 
+     * @param {Object} headers 请求头，键值对形式。
+     * @return {HttpClient} 返回当前HttpClient实例，用于链式调用。
+     */
+    headers(headers) {
+        return this;
+    }
+    /**
+     * 设置HTTP请求参数。
+     * 
+     * @param {Object} params 请求参数，键值对形式。
+     * @return {void} 该方法没有返回值。
+     */
+    params(params) {
+        return this;
+    }
+    
+    /**
+     * 设置HTTP请求体。
+     * 
+     * @param {Object} body 请求体，键值对形式。
+     * @return {HttpClient} 返回当前HttpClient实例，用于链式调用。
+     */
+    body(body) {
+        return this;
+    }
+    /**
+     * 发送HTTP请求。
+     * 
+     * @return {Promise<HttpResponse>} 返回一个Promise对象，解析为Response对象。
+     */
+    async execute() {
+
+    }
+
+}
+
+
+const HttpMethod = Object.freeze({
+     GET: "Get",
+     POST: "Post",
+     PUT: "Put",
+     DELETE: "Delete",
+});
+
+class HttpResponse{
+    constructor(status, headers, body, duration_ms) {
+        this.status = status;
+        this.headers = headers;
+        this.body = body;
+        this.duration_ms = duration_ms;
+    }
+}
+
+
+
+
 const http = {
     /**
      * 发送HTTP GET请求。

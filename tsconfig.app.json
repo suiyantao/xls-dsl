@@ -4,8 +4,8 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": [],
-    "skipLibCheck": true // 跳过第三方库类型检查
+    "skipLibCheck": true, // 跳过第三方库类型检查
   },
   "files": ["src/main.ts"],
-  "include": ["src/**/*.d.ts"]
+  "include": ["src/**/*.d.ts"],
 }

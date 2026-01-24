@@ -2,19 +2,18 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
-    HostListener,
     inject,
     OnInit,
     QueryList,
     ViewChild,
     ViewChildren
 } from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {IOutputData, SplitAreaDirective, SplitComponent} from 'angular-split';
-import {ask, open} from '@tauri-apps/plugin-dialog';
-import {animate, sequence, state, style, transition, trigger} from '@angular/animations';
-import {invoke} from "@tauri-apps/api/core";
-import {TerminalComponent} from "../../plugin/terminal/terminal.component";
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { IOutputData, SplitAreaDirective, SplitComponent } from 'angular-split';
+import { ask, open } from '@tauri-apps/plugin-dialog';
+import { animate, sequence, state, style, transition, trigger } from '@angular/animations';
+import { invoke } from "@tauri-apps/api/core";
+import { TerminalComponent } from "../../plugin/terminal/terminal.component";
 import { Menu, MenuItem } from '@tauri-apps/api/menu';
 import { MonacoEditorComponent } from '../../plugin/monaco-editor/monaco-editor.component';
 import { DialogComponent } from '../../plugin/dialog/dialog.component';
@@ -98,7 +97,7 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     messageSrv = inject(MessageService)
 
     ngOnInit() {
-        invoke<Array<FileInfo>>("find_all_file").then(res => {            
+        invoke<Array<FileInfo>>("find_all_file").then(res => {
             this.fileList = res;
         })
     }
@@ -151,17 +150,17 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
     }
 
     editFile() {
-        const selectedFile = this.fileList.filter(x=>x.selected)[0];
+        const selectedFile = this.fileList.filter(x => x.selected)[0];
         this.fileForm.patchValue(selectedFile as any);
         this.fileDialog.show();
         this.fileDialog.setTitle('修改');
     }
 
     async delFile() {
-        const yes: boolean = await ask('你确定删除?', {title: '系统提示', kind: 'warning'});
+        const yes: boolean = await ask('你确定删除?', { title: '系统提示', kind: 'warning' });
         if (yes) {
-            const selectedFile = this.fileList.filter(x=>x.selected)[0];
-            const res = await invoke<FileInfo>("remove_file", {id: selectedFile.id});
+            const selectedFile = this.fileList.filter(x => x.selected)[0];
+            const res = await invoke<FileInfo>("remove_file", { id: selectedFile.id });
             const index = this.fileList.indexOf(selectedFile, 0);
             if (index > -1) {
                 this.fileList.splice(index, 1);
@@ -169,56 +168,49 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
         }
     }
 
-    @HostListener('document:keydown', ['$event'])
-    handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === 'Enter') {
-             this.saveClick();
-        }
-    }
-
     async saveClick() {
         const fileForm = this.fileForm.value
-        if(!fileForm.name){
-             open({
+        if (!fileForm.name) {
+            open({
                 title: '系统提示',
                 kind: 'warning',
                 content: '请输入文件名'
-             })
+            })
             return;
         }
-        if(!fileForm.xlxTemplate){
-             open({
+        if (!fileForm.xlxTemplate) {
+            open({
                 title: '系统提示',
                 kind: 'warning',
                 content: '请选择文件'
-             })
+            })
             return;
         }
-        if(fileForm.id){
+        if (fileForm.id) {
             let add_form = {
-                id : fileForm.id,
+                id: fileForm.id,
                 name: fileForm.name as string,
                 xls: fileForm.xlxTemplate as string
-            }    
-            const res = await invoke<FileInfo>("update_name_xls_by_id", {...add_form});
-            this.fileList.forEach(x=>{
-                if(x.id === fileForm.id){
-                    x.name  = res.name;
-                    x.xlxTemplate  = res.xlxTemplate;
-                    x.code  = res.code;
+            }
+            const res = await invoke<FileInfo>("update_name_xls_by_id", { ...add_form });
+            this.fileList.forEach(x => {
+                if (x.id === fileForm.id) {
+                    x.name = res.name;
+                    x.xlxTemplate = res.xlxTemplate;
+                    x.code = res.code;
                 }
             })
-        }else {
+        } else {
             let add_form = {
                 name: fileForm.name as string,
                 xlxTemplate: fileForm.xlxTemplate as string,
                 code: ""
-            }    
-            const res = await invoke<FileInfo>("add_file", {newFile: add_form});
+            }
+            const res = await invoke<FileInfo>("add_file", { newFile: add_form });
             this.fileList.push(res);
         }
 
-       
+
         this.fileDialog.close();
     }
 
@@ -241,17 +233,17 @@ export class XlsEditorComponent implements AfterViewInit, OnInit {
             }
         })
         event.preventDefault();
-        let menu =  await this.menu;
+        let menu = await this.menu;
         menu.popup()
     }
 
 
-    async runClick($event: String) {
-       let fileInfo = this.fileList.find(x=>x.selected);
-       if(!fileInfo){
-           return
-       }
-       await invoke('run', {id: fileInfo.id});
+    async runClick() {
+        let fileInfo = this.fileList.find(x => x.selected);
+        if (!fileInfo) {
+            return
+        }
+        await invoke('run', { id: fileInfo.id });
     }
 
 }

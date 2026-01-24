@@ -1,21 +1,12 @@
 use handlebars::Handlebars;
-use sonyflake::Sonyflake;
-use std::sync::Mutex;
 use tera::Context;
 
 use deno_core::{error::AnyError, extension, op2};
 
 use crate::{
-    dao::models::RunLog,
-    deno::{fs_funs, http_funs, lib::{XLS_PATH, emit_log}},
+    deno::{core_funs, fs_funs, http_funs, lib::XLS_PATH},
     parse_xls::lib::ParseXls,
 };
-
-lazy_static::lazy_static! {
-    static ref SNOW_ID:Mutex<Sonyflake> = {
-        Mutex::new(Sonyflake::new().unwrap())
-    };
-}
 
 #[op2(async)]
 #[serde]
@@ -38,72 +29,6 @@ async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, An
     }
 }
 
-fn body_to_string(body: Option<serde_json::Value>) -> String {
-    match body {
-        Some(body) => {
-            if body.is_string() {
-                // 如果是字符串，直接获取字符串值
-                body.as_str().unwrap().to_string()
-            } else if body.is_number() {
-                // 如果是数字，转换为字符串
-                body.to_string()
-            } else if body.is_boolean() {
-                // 如果是布尔值，转换为字符串
-                body.as_bool().unwrap().to_string()
-            } else if body.is_null() {
-                // 如果是null，返回"null"
-                "null".to_string()
-            } else {
-                // 对于对象和数组，使用serde_json序列化为字符串
-                match serde_json::to_string(&body) {
-                    Ok(json_str) => json_str,
-                    Err(_) => body.to_string(), // 如果序列化失败，使用默认的to_string
-                }
-            }
-        },
-        None => {
-            "null".to_string()
-        }
-    }
-    
-}
-
-
-#[op2]
-fn println(#[serde] body: Option<serde_json::Value>) -> Result<(), AnyError> {
-    let body_str = body_to_string(body);
-    emit_log("println", RunLog::log(body_str));
-    Ok(())
-}
-
-#[op2]
-fn eprintln(#[serde] body: Option<serde_json::Value>) -> Result<(), AnyError> {
-    let body_str = body_to_string(body);
-    emit_log("eprintln", RunLog::error(body_str));
-    Ok(())
-}
-
-#[op2]
-#[string]
-fn op_md5(#[string] str: String) -> Result<String, AnyError> {
-    let res: String = format!("{:x}", md5::compute(str));
-    Ok(res)
-}
-
-#[op2]
-#[string]
-fn op_uuid() -> Result<String, AnyError> {
-    let uuid = uuid::Uuid::new_v4().to_string();
-    Ok(uuid)
-}
-
-#[op2]
-#[string]
-fn op_snowid() -> Result<String, AnyError> {
-    let binding = SNOW_ID.lock().unwrap();
-    let id = binding.next_id().unwrap();
-    Ok(id.to_string())
-}
 
 #[op2]
 #[string]
@@ -131,7 +56,7 @@ fn handlebars_render(
 extension!(
     runjs,
     ops = [
-        println, eprintln, op_read_xls, op_md5, op_uuid, op_snowid,
+        core_funs::println, core_funs::eprintln, op_read_xls, core_funs::op_md5, core_funs::op_uuid, core_funs::op_snowid,
         fs_funs::op_fs_copy_file,
         fs_funs::op_fs_create_dir,
         fs_funs::op_fs_read_dir,
@@ -159,7 +84,14 @@ extension!(
         http_funs::op_http_clear_cookies,
         http_funs::op_http_set_cookie,
         op_tera_template,
-        handlebars_render
+        handlebars_render,
+        http_funs::op_http_client_new,
+        http_funs::op_http_client_method,
+        http_funs::op_http_client_set_header,
+        http_funs::op_http_client_set_headers,
+        http_funs::op_http_client_execute,
+        http_funs::op_http_client_set_params,
+        http_funs::op_http_client_set_json_body
     ],
     esm_entry_point = "ext:runjs/runtime.js",
     esm = [dir "src", "runtime.js"]

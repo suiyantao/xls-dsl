@@ -1,5 +1,5 @@
 //! HTTP功能模块
-//! 
+//!
 //! 提供完整的HTTP客户端功能，包括：
 //! - REST API支持（GET, POST, PUT, DELETE）
 //! - 表单数据提交
@@ -8,9 +8,12 @@
 //! - 请求/响应头处理
 
 use deno_core::{error::AnyError, op2};
+use deno_core::{OpState, Resource, ResourceId};
 use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -25,7 +28,6 @@ pub struct HttpHeaders {
 }
 
 impl HttpHeaders {
-    
     /// 转换为reqwest头格式
     pub fn to_reqwest_headers(&self) -> reqwest::header::HeaderMap {
         let mut header_map = reqwest::header::HeaderMap::new();
@@ -84,7 +86,7 @@ pub struct CookieJarInfo {
 lazy_static::lazy_static! {
     /// 共享的Cookie jar
     static ref COOKIE_JAR: Arc<reqwest::cookie::Jar> = Arc::new(reqwest::cookie::Jar::default());
-    
+
     /// 全局HTTP客户端
     static ref HTTP_CLIENT: reqwest::Client = create_http_client();
 }
@@ -124,7 +126,7 @@ fn build_url_with_params(url: String, params: Option<HashMap<String, String>>) -
                 .map(|(k, v)| format!("{}={}", urlencoding::encode(k), urlencoding::encode(v)))
                 .collect::<Vec<_>>()
                 .join("&");
-            
+
             return if url.contains('?') {
                 format!("{}&{}", url, query_string)
             } else {
@@ -157,7 +159,7 @@ where
     let response_text = response.text().await?;
     let body = parse_response_body(response_text);
     let duration_ms = start_time.elapsed().as_millis() as u64;
-    
+
     Ok(HttpResponse {
         status,
         headers: response_headers,
@@ -174,16 +176,16 @@ where
 #[op2(async)]
 #[serde]
 pub async fn op_http_get(
-    #[string] url: String, 
-    #[serde] headers: Option<HttpHeaders>
+    #[string] url: String,
+    #[serde] headers: Option<HttpHeaders>,
 ) -> Result<HttpResponse, AnyError> {
     let start_time = std::time::Instant::now();
     let mut request_builder = HTTP_CLIENT.get(&url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     execute_request(request_builder.send(), start_time).await
 }
 
@@ -197,18 +199,18 @@ pub async fn op_http_post(
 ) -> Result<HttpResponse, AnyError> {
     let start_time = std::time::Instant::now();
     let mut request_builder = HTTP_CLIENT.post(&url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     if let Some(body) = body {
         let body_string = serde_json::to_string(&body)?;
         request_builder = request_builder
             .body(body_string)
             .header(reqwest::header::CONTENT_TYPE, "application/json");
     }
-    
+
     execute_request(request_builder.send(), start_time).await
 }
 
@@ -224,23 +226,24 @@ pub async fn op_http_post_form(
     let start_time = std::time::Instant::now();
     let final_url = build_url_with_params(url, params);
     let mut request_builder = HTTP_CLIENT.post(&final_url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     if let Some(form_data) = form_data {
         if !form_data.is_empty() {
             let form_params: Vec<(&str, &str)> = form_data
                 .iter()
                 .map(|(k, v)| (k.as_str(), v.as_str()))
                 .collect();
-            request_builder = request_builder
-                .form(&form_params)
-                .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+            request_builder = request_builder.form(&form_params).header(
+                reqwest::header::CONTENT_TYPE,
+                "application/x-www-form-urlencoded",
+            );
         }
     }
-    
+
     execute_request(request_builder.send(), start_time).await
 }
 
@@ -254,18 +257,18 @@ pub async fn op_http_put(
 ) -> Result<HttpResponse, AnyError> {
     let start_time = std::time::Instant::now();
     let mut request_builder = HTTP_CLIENT.put(&url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     if let Some(body) = body {
         let body_string = serde_json::to_string(&body)?;
         request_builder = request_builder
             .body(body_string)
             .header(reqwest::header::CONTENT_TYPE, "application/json");
     }
-    
+
     execute_request(request_builder.send(), start_time).await
 }
 
@@ -278,11 +281,11 @@ pub async fn op_http_delete(
 ) -> Result<HttpResponse, AnyError> {
     let start_time = std::time::Instant::now();
     let mut request_builder = HTTP_CLIENT.delete(&url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     execute_request(request_builder.send(), start_time).await
 }
 
@@ -299,29 +302,32 @@ pub async fn op_http_post_upload(
     let start_time = std::time::Instant::now();
     let final_url = build_url_with_params(url, params);
     let mut request_builder = HTTP_CLIENT.post(&final_url);
-    
+
     if let Some(headers) = headers {
         request_builder = request_builder.headers(headers.to_reqwest_headers());
     }
-    
+
     // 构建多部分表单数据
     let mut form = reqwest::multipart::Form::new();
-    
+
     // 添加表单字段
     if let Some(fields) = fields {
         for (key, value) in fields {
             form = form.text(key, value);
         }
     }
-    
+
     // 添加文件
     for file_data in files {
         let path = Path::new(&file_data.file_path);
-        
+
         if !path.exists() {
-            return Err(AnyError::msg(format!("File not found: {}", file_data.file_path)));
+            return Err(AnyError::msg(format!(
+                "File not found: {}",
+                file_data.file_path
+            )));
         }
-        
+
         let file_content = std::fs::read(&file_data.file_path)?;
         let file_name = file_data.file_name.unwrap_or_else(|| {
             path.file_name()
@@ -329,17 +335,16 @@ pub async fn op_http_post_upload(
                 .unwrap_or("upload.bin")
                 .to_string()
         });
-        
-        let mut file_part = reqwest::multipart::Part::bytes(file_content)
-            .file_name(file_name);
-        
+
+        let mut file_part = reqwest::multipart::Part::bytes(file_content).file_name(file_name);
+
         if let Some(mime_type) = &file_data.mime_type {
             file_part = file_part.mime_str(mime_type)?;
         }
-        
+
         form = form.part(file_data.field_name, file_part);
     }
-    
+
     request_builder = request_builder.multipart(form);
     execute_request(request_builder.send(), start_time).await
 }
@@ -381,27 +386,219 @@ pub async fn op_http_set_cookie(
 ) -> Result<String, AnyError> {
     // 创建cookie字符串
     let mut cookie_str = format!("{}={}", name, value);
-    
+
     if let Some(domain) = &domain {
         cookie_str.push_str(&format!("; domain={}", domain));
     }
-    
+
     if let Some(path) = &path {
         cookie_str.push_str(&format!("; path={}", path));
     }
-    
+
     if let Some(expires) = expires_seconds {
         cookie_str.push_str(&format!("; expires={}", expires));
     }
-    
+
     if secure.unwrap_or(false) {
         cookie_str.push_str("; secure");
     }
-    
+
     if http_only.unwrap_or(false) {
         cookie_str.push_str("; httponly");
     }
-    
+
     // 简化实现：返回成功
     Ok("true".to_string())
+}
+
+struct HttpClient {
+    client: reqwest::Client,
+    // 使用 RefCell 实现内部可变性
+    headers: RefCell<Option<HttpHeaders>>,
+    url: Rc<String>,
+    method: RefCell<HttpMethod>,
+    params: RefCell<Option<HashMap<String, String>>>,
+    body: RefCell<Option<serde_json::Value>>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+enum HttpMethod {
+    Get,
+    Post,
+    Delete,
+    Put,
+}
+
+impl Resource for HttpClient {
+    fn name(&self) -> std::borrow::Cow<'_, str> {
+        "HttpClient".into()
+    }
+}
+
+impl HttpClient {
+    pub fn new(url: String) -> Self {
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(30))
+            .connect_timeout(Duration::from_secs(10))
+            .user_agent("XLS-DSL/1.0")
+            .cookie_provider(COOKIE_JAR.clone())
+            .build()
+            .expect("Failed to create HTTP client");
+
+        Self {
+            client,
+            headers: RefCell::new(None),
+            url: Rc::new(url),
+            method: RefCell::new(HttpMethod::Get),
+            params: RefCell::new(None),
+            body: RefCell::new(None),
+        }
+    }
+}
+
+#[op2(fast)]
+#[smi]
+pub fn op_http_client_new(state: &mut OpState, #[string] url: String) -> ResourceId {
+    let http_client = HttpClient::new(url);
+    state.resource_table.add(http_client)
+}
+
+#[op2]
+#[smi]
+pub fn op_http_client_method(
+    state: &mut OpState,
+    #[smi] rid: ResourceId,
+    #[serde] method: HttpMethod,
+) -> ResourceId {
+    let http_client = state.resource_table.get::<HttpClient>(rid).unwrap();
+    *http_client.method.borrow_mut() = method;
+    rid
+}
+
+#[op2(fast)]
+#[smi]
+pub fn op_http_client_set_header(
+    state: &mut OpState,
+    #[smi] rid: ResourceId,
+    #[string] key: String,
+    #[string] value: String,
+) -> ResourceId {
+    // 从资源表中获取对象
+    let http_client = state.resource_table.get::<HttpClient>(rid).unwrap();
+
+    // 获取 RefCell 的可写借用并更新
+    let mut headers_guard = http_client.headers.borrow_mut();
+
+    if let Some(ref mut h) = *headers_guard {
+        h.headers.insert(key, value); // 假设 HttpHeaders 有 insert 方法
+    } else {
+        let mut h = HttpHeaders {
+            headers: HashMap::new(),
+        };
+        h.headers.insert(key, value);
+        *headers_guard = Some(h);
+    }
+
+    rid
+}
+
+#[op2]
+#[smi]
+pub fn op_http_client_set_headers(
+    state: &mut OpState,
+    #[smi] rid: ResourceId,
+    #[serde] headers: Option<HttpHeaders>,
+) -> ResourceId {
+    // 从资源表中获取对象
+    let http_client = state.resource_table.get::<HttpClient>(rid).unwrap();
+
+    // 获取 RefCell 的可写借用并更新
+    let mut headers_guard = http_client.headers.borrow_mut();
+    *headers_guard = headers;
+    rid
+}
+
+#[op2(async)]
+#[serde]
+pub async fn op_http_client_execute(
+    state: Rc<RefCell<OpState>>,
+    #[smi] rid: ResourceId,
+) -> Result<HttpResponse, AnyError> {
+    let http_client = state.borrow().resource_table.get::<HttpClient>(rid)?;
+    let client = http_client.client.clone();
+    let url = http_client.url.to_string();
+    let headers = http_client.headers.borrow().clone();
+    let method = http_client.method.borrow().clone();
+    let mut request_builder = match method {
+        HttpMethod::Get => client.get(url),
+        HttpMethod::Post => client.post(url),
+        HttpMethod::Delete => client.delete(url),
+        HttpMethod::Put => client.put(url),
+    };
+
+    if let Some(h) = headers {
+        request_builder = request_builder.headers(h.to_reqwest_headers());
+    }
+
+    // 设置 params
+    if let Some(params) = http_client.params.borrow().clone() {
+        request_builder = request_builder.query(&params);
+    }
+    // 设置 body
+    if let Some(body) = http_client.body.borrow().clone() {
+        let body_string = serde_json::to_string(&body)?;
+        println!("{:?}", body_string);
+        request_builder = request_builder
+            .body(body_string)
+            .header(reqwest::header::CONTENT_TYPE, "application/json");
+    }
+
+    execute_request(request_builder.send(), std::time::Instant::now()).await
+}
+
+// 设置 params
+#[op2]
+#[smi]
+pub fn op_http_client_set_params(
+    state: &mut OpState,
+    #[smi] rid: ResourceId,
+    #[serde] params: Option<HashMap<String, String>>,
+) -> ResourceId {
+    // 从资源表中获取对象
+    let http_client = state.resource_table.get::<HttpClient>(rid).unwrap();
+
+    // 获取 RefCell 的可写借用并更新
+    let mut params_guard = http_client.params.borrow_mut();
+    *params_guard = params;
+
+    rid
+}
+
+// 设置 json body
+#[op2]
+#[smi]
+pub fn op_http_client_set_json_body(
+    state: &mut OpState,
+    #[smi] rid: ResourceId,
+    #[serde] body: Option<serde_json::Value>,
+) -> ResourceId {
+    // 从资源表中获取对象
+    let http_client = state.resource_table.get::<HttpClient>(rid).unwrap();
+    // 获取 RefCell 的可写借用并更新
+    let mut body_guard = http_client.body.borrow_mut();
+    *body_guard = body;
+    // 设置 content-type 为 application/json
+    let mut content_type_guard = http_client.headers.borrow_mut();
+    if let Some(ref mut h) = *content_type_guard {
+        h.headers
+            .insert("content-type".to_string(), "application/json".to_string());
+    } else {
+        let mut h = HttpHeaders {
+            headers: HashMap::new(),
+        };
+        h.headers
+            .insert("content-type".to_string(), "application/json".to_string());
+        *content_type_guard = Some(h);
+    }
+    rid
 }

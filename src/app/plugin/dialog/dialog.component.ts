@@ -125,6 +125,10 @@ export class DialogComponent{
     }
   }
 
+  public isVisible(): boolean {
+    return this.visble;
+  }
+
 
 
 }

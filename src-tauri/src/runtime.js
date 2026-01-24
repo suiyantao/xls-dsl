@@ -1,19 +1,74 @@
+const core = Deno.core;
+const ops = core.ops;
+
+class HttpClient {
+  #rid;
+
+  constructor(url) {
+    this.#rid = ops.op_http_client_new(url);
+  }
+
+  header(key, value) {
+    ops.op_http_client_set_header(this.#rid, key, value);
+    return this;
+  }
+
+  headers(headers) {
+    ops.op_http_client_set_headers(this.#rid, headers);
+    return this;
+  }
+
+  method(method) {
+    ops.op_http_client_method(this.#rid, method);
+    return this;
+  }
+
+  params(params) {
+    ops.op_http_client_set_params(this.#rid, params);
+    return this;
+  }
+
+  body(body) {
+    ops.op_http_client_set_json_body(this.#rid, body);
+    return this;
+  }
+
+  async execute() {
+    return await ops.op_http_client_execute(this.#rid);
+  }
+
+  close() {
+    if (this.#rid) {
+      Deno.core.close(this.#rid);
+      this.#rid = undefined;
+    }
+  }
+
+  [Symbol.dispose]() {
+    this.close();
+  }
+}
+
 ((globalThis) => {
-  const core = Deno.core;
+
+
+
 
   function argsToMessage(...args) {
     return args.map((arg) => JSON.stringify(arg)).join(" ");
   }
 
-  globalThis.md5=(arg)=>{
+  globalThis.HttpClient = HttpClient
+
+  globalThis.md5 = (arg) => {
     return core.ops.op_md5(arg);
   }
 
-  globalThis.uuid=(arg)=>{
+  globalThis.uuid = (arg) => {
     return core.ops.op_uuid(arg);
   }
 
-  globalThis.snowid=(arg)=>{
+  globalThis.snowid = (arg) => {
     return core.ops.op_snowid(arg);
   }
 
@@ -55,7 +110,7 @@
       return core.ops.op_fs_is_dir(path);
     },
     is_file: (path) => {
-      return core.ops.op_fs_is_file(path); 
+      return core.ops.op_fs_is_file(path);
     },
     create_dir_all: (path) => {
       return core.ops.op_fs_create_dir_all(path);
@@ -90,7 +145,7 @@
 
   };
 
-  globalThis.http={
+  globalThis.http = {
     get: async (url, headers) => {
       return core.ops.op_http_get(url, headers);
     },
@@ -120,3 +175,7 @@
     },
   }
 })(globalThis);
+
+
+
+
