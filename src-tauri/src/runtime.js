@@ -79,11 +79,27 @@ class HttpClient {
   }
 
   globalThis.console = {
-    log: (args) => {
-      core.ops.println(args);
+    log: (...args) => {
+      if (args.length === 0) {
+        core.ops.println(null, []);
+      } else if (args.length === 1) {
+        core.ops.println(args[0], []);
+      } else if (typeof args[0] === 'string' && args[0].includes('%')) {
+        core.ops.println(args[0], args.slice(1));
+      } else {
+        core.ops.println(args[0], args.slice(1));
+      }
     },
-    error: (args) => {
-      core.ops.eprintln(args);
+    error: (...args) => {
+      if (args.length === 0) {
+        core.ops.eprintln(null, []);
+      } else if (args.length === 1) {
+        core.ops.eprintln(args[0], []);
+      } else if (typeof args[0] === 'string' && args[0].includes('%')) {
+        core.ops.eprintln(args[0], args.slice(1));
+      } else {
+        core.ops.eprintln(args[0], args.slice(1));
+      }
     },
   };
 
@@ -175,7 +191,3 @@ class HttpClient {
     },
   }
 })(globalThis);
-
-
-
-
