@@ -43,7 +43,16 @@ console.table(data);
 const hash = md5('password');
 const uuid = uuid();
 const snowflakeId = snowid();
+
+// 远程包加载（当前仅支持 esm.sh 风格）
+const lodash = await pkg.import('lodash', '4.17.21');
+console.log(lodash.chunk([1, 2, 3, 4], 2));
 ```
+
+- **远程模块加载** - 通过 `pkg.import(name, version)` 加载 `esm.sh` 风格远程模块
+- **同源限制** - 默认只允许与入口包同源的远程模块继续加载，阻止跨源链式导入
+- **可测试覆盖** - 可通过 `globalThis.__pkgBaseUrl` 覆盖基础地址，便于接入本地 mock server
+- **错误反馈** - 空参数、非法包名、HTTP 非 2xx 响应都会直接抛错
 
 ### 🔩 Rust 扩展函数
 - **op_fs_*** - 完整的文件系统操作
@@ -155,17 +164,23 @@ console.log('GitHub API response:', JSON.parse(response).name);
    - 完整的异步编程支持
 
 2. **使用扩展函数**
-   ```javascript
-   // 文件操作
-   await fs.create_dir('./new-folder');
-   await fs.write('./data.json', JSON.stringify({key: 'value'}));
+    ```javascript
+    // 文件操作
+    await fs.create_dir('./new-folder');
+    await fs.write('./data.json', JSON.stringify({key: 'value'}));
    
-   // 网络请求
-   const data = await http.post('https://api.example.com', {}, {data: 'value'});
+    // 网络请求
+    const data = await http.post('https://api.example.com', {}, {data: 'value'});
    
-   // Excel 处理
-   const excelData = await fs.read_xls('./template.xlsx');
-   ```
+    // Excel 处理
+    const excelData = await fs.read_xls('./template.xlsx');
+
+    // 远程包加载
+    const lodash = await pkg.import('lodash', '4.17.21');
+    console.log(lodash.chunk([1, 2, 3, 4], 2));
+    ```
+
+    `pkg.import(name, version)` 当前只支持 `esm.sh` 风格地址拼接，默认基础地址为 `https://esm.sh`。运行时会校验 `name` 与 `version` 非空、包名合法，并在远程请求返回 HTTP 非 2xx 时抛出带 URL 和状态码的错误。远程模块继续导入其他模块时，当前仅允许同源地址。
 
 3. **错误处理**
    ```javascript

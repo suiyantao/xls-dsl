@@ -179,6 +179,22 @@ pub fn op_fs_write(#[string] path: String, #[string] contents: String) -> Result
     Ok(())
 }
 
+#[op2(fast)]
+pub fn op_fs_write_binary(
+    #[string] path: String,
+    #[buffer(copy)] contents: Vec<u8>,
+) -> Result<(), AnyError> {
+    create_file_if_not_exists(&path)?;
+    fs::write(path, contents)?;
+    Ok(())
+}
+
+#[op2]
+#[buffer]
+pub fn op_fs_read_binary(#[string] path: String) -> Result<Vec<u8>, AnyError> {
+    fs::read(path).map_err(AnyError::from)
+}
+
 // 逐行读取文件内容并返回字符串向量
 /// # 参数
 /// - `path`: 要逐行读取的文件的路径，以字符串形式表示。
@@ -241,3 +257,50 @@ pub fn op_fs_create_file(#[string] path: String) -> Result<(), AnyError> {
         }
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::{op_fs_read_binary, op_fs_write_binary};
+//     use std::{
+//         fs,
+//         path::PathBuf,
+//         time::{SystemTime, UNIX_EPOCH},
+//     };
+
+//     fn temp_path(name: &str) -> PathBuf {
+//         let unique = SystemTime::now()
+//             .duration_since(UNIX_EPOCH)
+//             .unwrap()
+//             .as_nanos();
+//         std::env::temp_dir().join(format!("xls_dsl_{name}_{unique}"))
+//     }
+
+//     #[test]
+//     fn op_fs_write_binary_creates_parent_dirs() {
+//         let root = temp_path("write_binary_creates_parent_dirs");
+//         let file_path = root.join("nested").join("bytes.bin");
+//         let bytes = vec![0_u8, 159, 255, 10];
+
+//         op_fs_write_binary(file_path.to_string_lossy().to_string(), bytes.clone()).unwrap();
+
+//         assert!(file_path.exists());
+//         assert_eq!(fs::read(&file_path).unwrap(), bytes);
+
+//         let _ = fs::remove_dir_all(root);
+//     }
+
+//     #[test]
+//     fn op_fs_read_binary_round_trips_bytes() {
+//         let root = temp_path("read_binary_round_trips_bytes");
+//         fs::create_dir_all(&root).unwrap();
+//         let file_path = root.join("round-trip.bin");
+//         let bytes = vec![0_u8, 1, 2, 3, 128, 255];
+//         fs::write(&file_path, &bytes).unwrap();
+
+//         let actual = op_fs_read_binary(file_path.to_string_lossy().to_string()).unwrap();
+
+//         assert_eq!(actual, bytes);
+
+//         let _ = fs::remove_dir_all(root);
+//     }
+// }

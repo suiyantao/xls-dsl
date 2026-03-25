@@ -29,7 +29,6 @@ async fn op_read_xls(#[string] mut path: String) -> Result<serde_json::Value, An
     }
 }
 
-
 #[op2]
 #[string]
 fn op_tera_template(
@@ -71,6 +70,8 @@ extension!(
         fs_funs::op_fs_remove_file,
         fs_funs::op_fs_rename,
         fs_funs::op_fs_write,
+        fs_funs::op_fs_write_binary,
+        fs_funs::op_fs_read_binary,
         fs_funs::op_fs_read_line,
         fs_funs::op_fs_append,
         fs_funs::op_fs_create_file,

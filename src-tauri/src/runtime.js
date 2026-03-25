@@ -50,33 +50,63 @@ class HttpClient {
 }
 
 ((globalThis) => {
+  function validatePackageName(name) {
+    if (/\s/.test(name)) {
+      throw new Error(`pkg.import received invalid package name: ${name}`);
+    }
 
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(name)) {
+      throw new Error(`pkg.import received invalid package name: ${name}`);
+    }
 
+    if (name.startsWith("/")) {
+      throw new Error(`pkg.import received invalid package name: ${name}`);
+    }
 
+    const segments = name.split("/");
+    if (
+      segments.some(
+        (segment) =>
+          segment.length === 0 || segment === "." || segment === "..",
+      )
+    ) {
+      throw new Error(`pkg.import received invalid package name: ${name}`);
+    }
+
+    if (name.startsWith("@")) {
+      if (
+        segments.length < 2 ||
+        !segments[0].startsWith("@") ||
+        segments[0].length === 1
+      ) {
+        throw new Error(`pkg.import received invalid package name: ${name}`);
+      }
+    }
+  }
 
   function argsToMessage(...args) {
     return args.map((arg) => JSON.stringify(arg)).join(" ");
   }
 
-  globalThis.HttpClient = HttpClient
+  globalThis.HttpClient = HttpClient;
 
   globalThis.md5 = (arg) => {
     return core.ops.op_md5(arg);
-  }
+  };
 
   globalThis.uuid = (arg) => {
     return core.ops.op_uuid(arg);
-  }
+  };
 
   globalThis.snowid = (arg) => {
     return core.ops.op_snowid(arg);
-  }
+  };
 
   globalThis.Handlebars = {
     render: (template, data) => {
       return core.ops.handlebars_render(template, data);
-    }
-  }
+    },
+  };
 
   globalThis.console = {
     log: (...args) => {
@@ -84,7 +114,7 @@ class HttpClient {
         core.ops.println(null, []);
       } else if (args.length === 1) {
         core.ops.println(args[0], []);
-      } else if (typeof args[0] === 'string' && args[0].includes('%')) {
+      } else if (typeof args[0] === "string" && args[0].includes("%")) {
         core.ops.println(args[0], args.slice(1));
       } else {
         core.ops.println(args[0], args.slice(1));
@@ -95,7 +125,7 @@ class HttpClient {
         core.ops.eprintln(null, []);
       } else if (args.length === 1) {
         core.ops.eprintln(args[0], []);
-      } else if (typeof args[0] === 'string' && args[0].includes('%')) {
+      } else if (typeof args[0] === "string" && args[0].includes("%")) {
         core.ops.eprintln(args[0], args.slice(1));
       } else {
         core.ops.eprintln(args[0], args.slice(1));
@@ -157,8 +187,7 @@ class HttpClient {
     },
     read_to_line: (filePath) => {
       return core.ops.op_fs_read_line(filePath);
-    }
-
+    },
   };
 
   globalThis.http = {
@@ -175,7 +204,13 @@ class HttpClient {
       return core.ops.op_http_put(url, headers, body);
     },
     upload: async (url, headers, formFields, files, customHeaders) => {
-      return core.ops.op_http_post_upload(url, headers, formFields, files, customHeaders);
+      return core.ops.op_http_post_upload(
+        url,
+        headers,
+        formFields,
+        files,
+        customHeaders,
+      );
     },
     delete: async (url, headers) => {
       return core.ops.op_http_delete(url, headers);
@@ -187,7 +222,40 @@ class HttpClient {
       return core.ops.op_http_clear_cookies();
     },
     setCookie: async (name, value, domain, path, expires, secure, httpOnly) => {
-      return core.ops.op_http_set_cookie(name, value, domain, path, expires, secure, httpOnly);
+      return core.ops.op_http_set_cookie(
+        name,
+        value,
+        domain,
+        path,
+        expires,
+        secure,
+        httpOnly,
+      );
     },
-  }
+  };
+
+  globalThis.Deno = {
+    writeFileSync: (path, data) => {
+      return core.ops.op_fs_write_binary(path, data);
+    },
+    readFileSync: (path) => {
+      return core.ops.op_fs_read_binary(path);
+    },
+  };
+
+  globalThis.pkg = {
+    import: async (name, version) => {
+      if (!name || !version) {
+        throw new Error("pkg.import requires name and version");
+      }
+
+      validatePackageName(name);
+
+      const pkgBaseUrl = (globalThis.__pkgBaseUrl ?? "https://esm.sh").replace(
+        /\/$/,
+        "",
+      );
+      return await import(`${pkgBaseUrl}/${name}@${version}`);
+    },
+  };
 })(globalThis);

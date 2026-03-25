@@ -20,7 +20,10 @@ calamine = {version = "0.32.0", features= ["dates"] }
 anyhow = "1.0.100"
 actix-rt = "2.11.0"
 lazy_static = "1.4.0"
-diesel = {version = "2.3.5", features = ["sqlite", "chrono"] }
+diesel = {version = "2.3.5", features = ["sqlite", "mysql", "postgres", "chrono"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+mysql = "25"
+postgres = "0.19"
 chrono = {version = "0.4.42", features = ["serde"] }
 env = "1.0.1"
 diesel_migrations = "2.1.0"
