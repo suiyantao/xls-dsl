@@ -32,6 +32,7 @@ sonyflake = "0.4.0"
 uuid = {version = "1.19.0", features = ["v4"] }
 md5 = "0.8.0"
 deno_core = "=0.311"
+deno_ast = { version = "0.53.1", features = ["transpiling"] }
 base64 = "0.22.0"
 reqwest = { version = "0.12.28", features = ["blocking", "multipart", "cookies"] }
 urlencoding = "2.1"

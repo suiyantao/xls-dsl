@@ -30,6 +30,10 @@ const extraLibSource = readFileSync(
 );
 
 assert.match(extraLibSource, /declare const fs:/, 'missing global fs declaration');
+assert.match(extraLibSource, /type XlsCell = string \| number \| boolean \| null;/, 'missing XlsCell alias');
+assert.match(extraLibSource, /interface XlsRow \{[\s\S]*\[column: string\]: XlsCell;[\s\S]*\}/, 'missing XlsRow index signature');
+assert.match(extraLibSource, /type XlsSheet = XlsRow\[\];/, 'missing XlsSheet alias');
+assert.match(extraLibSource, /read_xls\(filePath\?: string\): Promise<XlsSheet\[\]>;/, 'read_xls should return Promise<XlsSheet[]>');
 assert.match(extraLibSource, /declare const http:/, 'missing global http declaration');
 assert.match(extraLibSource, /declare function uuid\(/, 'missing global uuid declaration');
 assert.doesNotMatch(extraLibSource, /export class HttpClient/, 'extra lib should not export HttpClient as a module export');

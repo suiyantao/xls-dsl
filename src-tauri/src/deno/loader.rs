@@ -6,6 +6,13 @@ use std::sync::Mutex;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
+use deno_ast::EmitOptions;
+use deno_ast::ImportsNotUsedAsValues;
+use deno_ast::MediaType;
+use deno_ast::ParseParams;
+use deno_ast::SourceMapOption;
+use deno_ast::TranspileModuleOptions;
+use deno_ast::TranspileOptions;
 use deno_core::error::AnyError;
 use deno_core::resolve_import;
 use deno_core::url::Url;
@@ -24,6 +31,84 @@ use sha2::Sha256;
 lazy_static! {
     static ref REMOTE_CACHE_LOCKS: Mutex<HashMap<String, Arc<Mutex<()>>>> =
         Mutex::new(HashMap::new());
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LocalModuleKind {
+    TypeScript,
+    JavaScript,
+}
+
+pub(crate) fn local_module_kind(specifier: &str) -> Option<LocalModuleKind> {
+    if specifier.ends_with(".ts")
+        || specifier.ends_with(".tsx")
+        || specifier.ends_with(".mts")
+        || specifier.ends_with(".cts")
+    {
+        return Some(LocalModuleKind::TypeScript);
+    }
+
+    if specifier.ends_with(".js") || specifier.ends_with(".mjs") || specifier.ends_with(".cjs") {
+        return Some(LocalModuleKind::JavaScript);
+    }
+
+    None
+}
+
+fn transpile_typescript_module_source(
+    specifier: deno_ast::ModuleSpecifier,
+    source: &str,
+) -> Result<String, AnyError> {
+    let parsed = deno_ast::parse_module(ParseParams {
+        specifier,
+        text: source.into(),
+        media_type: MediaType::TypeScript,
+        capture_tokens: false,
+        scope_analysis: false,
+        maybe_syntax: None,
+    })?;
+
+    let emitted = parsed.transpile(
+        &TranspileOptions {
+            imports_not_used_as_values: ImportsNotUsedAsValues::Remove,
+            ..Default::default()
+        },
+        &TranspileModuleOptions::default(),
+        &EmitOptions {
+            source_map: SourceMapOption::None,
+            inline_sources: false,
+            ..Default::default()
+        },
+    )?;
+
+    Ok(emitted.into_source().text)
+}
+
+pub(crate) fn transpile_typescript_source(source: &str) -> Result<String, AnyError> {
+    transpile_typescript_module_source(deno_ast::ModuleSpecifier::parse("file:///inline.ts")?, source)
+}
+
+pub(crate) fn load_local_module_text_for_test(specifier: &Url) -> Result<String, AnyError> {
+    let source = fs::read_to_string(
+        specifier
+            .to_file_path()
+            .map_err(|_| AnyError::msg(format!("module specifier is not a local file: {specifier}")))?,
+    )?;
+
+    match local_module_kind(specifier.path()) {
+        Some(LocalModuleKind::TypeScript) => {
+            transpile_typescript_module_source(specifier.clone(), &source)
+        }
+        Some(LocalModuleKind::JavaScript) => Ok(source),
+        None => Err(AnyError::msg(format!(
+            "unsupported local module extension: {specifier}"
+        ))),
+    }
+}
+
+fn load_local_module(module_specifier: &ModuleSpecifier) -> Result<ModuleSource, AnyError> {
+    let source = load_local_module_text_for_test(module_specifier)?;
+    Ok(EsmShModuleLoader::module_source_from_string(module_specifier, source))
 }
 
 #[allow(dead_code)]
@@ -180,23 +265,28 @@ impl ModuleLoader for EsmShModuleLoader {
         _is_dyn_import: bool,
         _requested_module_type: RequestedModuleType,
     ) -> ModuleLoadResponse {
-        ModuleLoadResponse::Async(Box::pin(Self::load_remote_module(
-            self.config.base_url.clone(),
-            self.config.cache_dir.clone(),
-            module_specifier.clone(),
-        )))
+        match module_specifier.scheme() {
+            "file" => ModuleLoadResponse::Sync(load_local_module(module_specifier)),
+            _ => ModuleLoadResponse::Async(Box::pin(Self::load_remote_module(
+                self.config.base_url.clone(),
+                self.config.cache_dir.clone(),
+                module_specifier.clone(),
+            ))),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::transpile_typescript_source;
+    use std::fs;
     use std::io::Read;
     use std::io::Write;
     use std::net::TcpListener;
     use std::path::PathBuf;
+    use std::thread;
     use std::time::SystemTime;
     use std::time::UNIX_EPOCH;
-    use std::thread;
 
     use deno_core::error::AnyError;
     use deno_core::url::Url;
@@ -208,6 +298,101 @@ mod tests {
 
     use super::EsmShModuleLoader;
     use super::LoaderConfig;
+    use super::LocalModuleKind;
+    use super::load_local_module_text_for_test;
+    use super::local_module_kind;
+
+    #[test]
+    fn transpile_typescript_source_removes_type_annotations() {
+        let source = "const value: string = 'hello';\nfunction twice(input: number): number { return input * 2; }\n";
+
+        let emitted = transpile_typescript_source(source).expect("transpile should succeed");
+
+        assert!(
+            emitted.contains("const value = 'hello';"),
+            "emitted source was: {emitted}"
+        );
+        assert!(
+            emitted.contains("function twice(input)"),
+            "emitted source was: {emitted}"
+        );
+        assert!(!emitted.contains(": string"), "emitted source was: {emitted}");
+        assert!(!emitted.contains(": number"), "emitted source was: {emitted}");
+    }
+
+    #[test]
+    fn loader_identifies_ts_extensions_for_transpile() {
+        assert_eq!(local_module_kind("file:///tmp/main.ts"), Some(LocalModuleKind::TypeScript));
+        assert_eq!(local_module_kind("file:///tmp/main.tsx"), Some(LocalModuleKind::TypeScript));
+        assert_eq!(local_module_kind("file:///tmp/main.mts"), Some(LocalModuleKind::TypeScript));
+        assert_eq!(local_module_kind("file:///tmp/main.cts"), Some(LocalModuleKind::TypeScript));
+    }
+
+    #[test]
+    fn loader_keeps_js_extensions_as_javascript() {
+        assert_eq!(local_module_kind("file:///tmp/main.js"), Some(LocalModuleKind::JavaScript));
+        assert_eq!(local_module_kind("file:///tmp/main.mjs"), Some(LocalModuleKind::JavaScript));
+        assert_eq!(local_module_kind("file:///tmp/main.cjs"), Some(LocalModuleKind::JavaScript));
+        assert_eq!(local_module_kind("file:///tmp/main.json"), None);
+    }
+
+    #[test]
+    fn loader_loads_local_typescript_module_as_javascript() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("ts-loader-test-{unique}"));
+        fs::create_dir_all(&dir).unwrap();
+        let file_path = dir.join("dep.ts");
+        fs::write(&file_path, "export const value: string = 'ok';\n").unwrap();
+
+        let specifier = Url::from_file_path(&file_path).unwrap();
+        let emitted = load_local_module_text_for_test(&specifier).expect("load should succeed");
+
+        assert!(
+            emitted.contains("export const value = 'ok';"),
+            "emitted source was: {emitted}"
+        );
+        assert!(!emitted.contains(": string"), "emitted source was: {emitted}");
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn loader_loads_local_javascript_module_without_transpile() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("js-loader-test-{unique}"));
+        fs::create_dir_all(&dir).unwrap();
+        let file_path = dir.join("dep.js");
+        let source = "export const value = 'ok';\n";
+        fs::write(&file_path, source).unwrap();
+
+        let specifier = Url::from_file_path(&file_path).unwrap();
+        let emitted = load_local_module_text_for_test(&specifier).expect("load should succeed");
+
+        assert_eq!(emitted, source);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn transpile_typescript_source_keeps_pkg_import_call() {
+        let source = r#"
+const mod = await pkg.import("lodash", "4.17.21");
+export { mod };
+"#;
+
+        let emitted = transpile_typescript_source(source).expect("transpile should succeed");
+
+        assert!(
+            emitted.contains("pkg.import(\"lodash\", \"4.17.21\")"),
+            "emitted source was: {emitted}"
+        );
+    }
 
     fn loader() -> EsmShModuleLoader {
         EsmShModuleLoader::new(LoaderConfig {
@@ -345,7 +530,8 @@ mod tests {
 
         let (base_url, handle) =
             spawn_mock_http_server(module_path, "application/javascript", module_source);
-        let specifier = Url::parse(&format!("{}{path}", base_url, path = &module_path[1..])).unwrap();
+        let specifier =
+            Url::parse(&format!("{}{path}", base_url, path = &module_path[1..])).unwrap();
 
         let first_loader = EsmShModuleLoader::new(LoaderConfig {
             base_url: base_url.clone(),
@@ -360,7 +546,9 @@ mod tests {
             base_url,
             cache_dir: cache_dir.clone(),
         });
-        let second_source = load_module_source(&second_loader, &specifier).await.unwrap();
+        let second_source = load_module_source(&second_loader, &specifier)
+            .await
+            .unwrap();
         assert_eq!(second_source, module_source);
 
         let _ = std::fs::remove_dir_all(cache_dir);

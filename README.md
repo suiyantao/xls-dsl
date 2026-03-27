@@ -160,6 +160,10 @@ console.log('GitHub API response:', JSON.parse(response).name);
 
 1. **执行 JavaScript/TypeScript**
    - 直接在编辑器中编写 JS/TS 代码
+   - 主脚本文本支持 TypeScript 语法直接运行
+   - 支持从主脚本相对导入本地 `.ts/.tsx/.mts/.cts` 与 `.js/.mjs/.cjs` 依赖
+   - 本地相对导入路径相对当前 `xlx_template` 的父目录解析
+   - 远程 `pkg.import(...)` 与 `https://esm.sh/...` 仍按 JavaScript 模块处理，不在当前 TS 直运行范围内
    - 支持所有现代 JavaScript 特性
    - 完整的异步编程支持
 

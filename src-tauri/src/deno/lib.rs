@@ -1,6 +1,10 @@
 use deno_core::error::AnyError;
 use deno_core::url::Url;
 use lazy_static::lazy_static;
+use std::fs;
+use std::path::PathBuf;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 use tauri::WebviewWindow;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -41,8 +45,36 @@ fn default_loader_config() -> Result<LoaderConfig, AnyError> {
     })
 }
 
+fn script_base_dir() -> PathBuf {
+    XLS_PATH.with(|path| {
+        let current = path.borrow().clone();
+        if current.is_empty() {
+            return std::env::temp_dir();
+        }
+
+        PathBuf::from(current)
+            .parent()
+            .map(|parent| parent.to_path_buf())
+            .unwrap_or_else(std::env::temp_dir)
+    })
+}
+
+fn write_temporary_main_module(code: &str) -> Result<PathBuf, AnyError> {
+    let base_dir = script_base_dir();
+    fs::create_dir_all(&base_dir)?;
+
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)?
+        .as_nanos();
+    let file_path = base_dir.join(format!(".xls-dsl-main-{unique}.ts"));
+    fs::write(&file_path, code)?;
+    Ok(file_path)
+}
+
 async fn run_js_with_config(code: String, config: LoaderConfig) -> Result<(), AnyError> {
-    let main_module = Url::parse("file://")?;
+    let main_module_path = write_temporary_main_module(&code)?;
+    let main_module = Url::from_file_path(&main_module_path)
+        .map_err(|_| AnyError::msg(format!("invalid main module path: {}", main_module_path.display())))?;
     let loader = Rc::new(EsmShModuleLoader::new(config));
 
     let mut js_runtime = deno_core::JsRuntime::new(deno_core::RuntimeOptions {
@@ -51,13 +83,16 @@ async fn run_js_with_config(code: String, config: LoaderConfig) -> Result<(), An
         ..Default::default()
     });
 
-    let mod_id = js_runtime
-        .load_main_es_module_from_code(&main_module, code)
-        .await?;
+    let result = async {
+        let mod_id = js_runtime.load_main_es_module(&main_module).await?;
+        let evaluation = js_runtime.mod_evaluate(mod_id);
+        js_runtime.run_event_loop(Default::default()).await?;
+        evaluation.await
+    }
+    .await;
 
-    let result = js_runtime.mod_evaluate(mod_id);
-    js_runtime.run_event_loop(Default::default()).await?;
-    result.await
+    let _ = fs::remove_file(&main_module_path);
+    result
 }
 
 pub(crate) async fn run_js(code: String) -> Result<(), AnyError> {
@@ -123,6 +158,176 @@ async fn local_runtime_still_executes_inline_code() {
     run_js(r#"console.log("ok");"#.to_string())
         .await
         .unwrap();
+}
+
+#[tokio::test]
+async fn main_typescript_script_executes_successfully() {
+    run_js(
+        r#"
+const name: string = "ok";
+console.log(name);
+"#
+        .to_string(),
+    )
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
+async fn main_typescript_script_imports_local_ts_dependency() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let base_dir = std::env::temp_dir().join(format!("xls-dsl-ts-local-{unique}"));
+    fs::create_dir_all(&base_dir).unwrap();
+    fs::write(base_dir.join("dep.ts"), "export const value: string = 'ok';\n").unwrap();
+
+    XLS_PATH.with(|path| {
+        *path.borrow_mut() = base_dir.join("template.xlsx").display().to_string();
+    });
+
+    let result = run_js(
+        r#"
+import { value } from "./dep.ts";
+console.log(value);
+"#
+        .to_string(),
+    )
+    .await;
+
+    XLS_PATH.with(|path| {
+        path.borrow_mut().clear();
+    });
+    let _ = fs::remove_dir_all(&base_dir);
+
+    result.unwrap();
+}
+
+#[tokio::test]
+async fn main_typescript_script_imports_local_js_dependency() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let base_dir = std::env::temp_dir().join(format!("xls-dsl-js-local-{unique}"));
+    fs::create_dir_all(&base_dir).unwrap();
+    fs::write(base_dir.join("dep.js"), "export const value = 'ok';\n").unwrap();
+
+    XLS_PATH.with(|path| {
+        *path.borrow_mut() = base_dir.join("template.xlsx").display().to_string();
+    });
+
+    let result = run_js(
+        r#"
+import { value } from "./dep.js";
+console.log(value);
+"#
+        .to_string(),
+    )
+    .await;
+
+    XLS_PATH.with(|path| {
+        path.borrow_mut().clear();
+    });
+    let _ = fs::remove_dir_all(&base_dir);
+
+    result.unwrap();
+}
+
+#[tokio::test]
+async fn main_typescript_script_imports_nested_local_ts_dependency() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let base_dir = std::env::temp_dir().join(format!("xls-dsl-nested-ts-{unique}"));
+    fs::create_dir_all(base_dir.join("nested")).unwrap();
+    fs::write(
+        base_dir.join("dep.ts"),
+        "import { nestedValue } from './nested/child.ts';\nexport const value: string = nestedValue;\n",
+    )
+    .unwrap();
+    fs::write(
+        base_dir.join("nested/child.ts"),
+        "export const nestedValue: string = 'ok';\n",
+    )
+    .unwrap();
+
+    XLS_PATH.with(|path| {
+        *path.borrow_mut() = base_dir.join("template.xlsx").display().to_string();
+    });
+
+    let result = run_js(
+        r#"
+import { value } from "./dep.ts";
+console.log(value);
+"#
+        .to_string(),
+    )
+    .await;
+
+    XLS_PATH.with(|path| {
+        path.borrow_mut().clear();
+    });
+    let _ = fs::remove_dir_all(&base_dir);
+
+    result.unwrap();
+}
+
+#[tokio::test]
+async fn temporary_main_ts_file_is_cleaned_up_on_error() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let base_dir = std::env::temp_dir().join(format!("xls-dsl-ts-cleanup-{unique}"));
+    fs::create_dir_all(&base_dir).unwrap();
+
+    XLS_PATH.with(|path| {
+        *path.borrow_mut() = base_dir.join("template.xlsx").display().to_string();
+    });
+
+    let result = run_js(
+        r#"
+const broken: = "oops";
+"#
+        .to_string(),
+    )
+    .await;
+
+    XLS_PATH.with(|path| {
+        path.borrow_mut().clear();
+    });
+
+    let leftover = fs::read_dir(&base_dir)
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.file_name().to_string_lossy().to_string())
+        .collect::<Vec<_>>();
+
+    let _ = fs::remove_dir_all(&base_dir);
+
+    assert!(result.is_err(), "expected TypeScript parse failure");
+    assert!(
+        leftover.iter().all(|name| !name.starts_with(".xls-dsl-main-")),
+        "temporary main module files were not cleaned up: {leftover:?}"
+    );
+}
+
+#[tokio::test]
+async fn main_typescript_script_reports_transpile_error() {
+    let err = run_js(
+        r#"
+const broken: = "oops";
+"#
+        .to_string(),
+    )
+    .await
+    .unwrap_err();
+
+    let message = err.to_string();
+    assert!(message.contains(".ts") || message.contains("inline.ts"), "unexpected error: {message}");
 }
 
 #[tokio::test]
